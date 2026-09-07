@@ -1449,31 +1449,49 @@ function loadOnboardingByTeam() {
         steps.sort(function(a,b) {
             return a.stepOrder - b.stepOrder;
         });
+
         var html = '';
         steps.forEach(function(step) {
             var adminActions = role === 'Admin' ?
-                '<div style="display:flex;gap:5px;">' +
-                '<button class="btn-edit" onclick="editStep(' + step.stepID + ')">Edit</button>' +
-                '<button class="btn-delete" onclick="deleteStep(' + step.stepID + ')">Del</button>' +
+                '<div style="display:flex;gap:5px;margin-top:8px;">' +
+                '<button class="btn-edit" ' +
+                'onclick="editStep(' + step.stepID + 
+                ')">Edit</button>' +
+                '<button class="btn-delete" ' +
+                'onclick="deleteStep(' + step.stepID + 
+                ')">Delete</button>' +
                 '</div>' : '';
-            html += '<div class="step-card">' +
+
+            html += '<div class="step-card" ' +
+                'id="step-' + step.stepID + '">' +
                 '<div class="step-num">' + 
-                    step.stepOrder + '</div>' +
-                '<div class="step-info">' +
+                step.stepOrder + '</div>' +
+                '<div class="step-info" style="flex:1;">' +
                 '<h4>' + safe(step.stepName) + '</h4>' +
                 '<p>' + safe(step.description) + '</p>' +
-                '<p style="color:#86bc25;font-size:11px;">' + 
-                    safe(step.teamName) + '</p>' +
+                '<div style="margin-top:8px;display:flex;gap:10px;align-items:center;">' +
+                '<label style="font-size:12px;color:#555;">Status:</label>' +
+                '<select id="stepStatus_' + step.stepID + '" ' +
+                'style="padding:4px 8px;border:1px solid #ddd;border-radius:4px;font-size:12px;">' +
+                '<option value="NotStarted">Not Started</option>' +
+                '<option value="InProgress">In Progress</option>' +
+                '<option value="Completed">Completed</option>' +
+                '</select>' +
+                '<button class="btn-save" ' +
+                'style="padding:4px 12px;background:#86bc25;color:white;border:none;border-radius:4px;cursor:pointer;font-size:12px;" ' +
+                'onclick="updateStepStatus(' + step.stepID + ')">Save</button>' +
                 '</div>' +
                 adminActions +
-                '</div>';
+                '</div></div>';
         });
         container.innerHTML = html;
+
+        // Load existing progress
+        loadStepProgress(team);
     })
     .catch(function(e) {
         container.innerHTML = 
             '<p class="error-text">Error loading steps</p>';
-        console.log('Error:', e);
     });
 }
 
@@ -2320,6 +2338,73 @@ document.addEventListener('click', function(e) {
         if (menu) menu.style.display = 'none';
     }
 });
+
+function loadStepProgress(team) {
+    fetch('/api/onboarding/progress', {
+        headers: {
+            'Authorization': 'Bearer ' + token
+        }
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(progress) {
+        progress.forEach(function(p) {
+            var select = document
+                .getElementById('stepStatus_' + p.stepID);
+            if (select && p.status) {
+                select.value = p.status;
+                updateStepColor(p.stepID, p.status);
+            }
+        });
+    });
+}
+
+function updateStepStatus(stepId) {
+    var select = document
+        .getElementById('stepStatus_' + stepId);
+    var status = select.value;
+    var completedDate = status === 'Completed' ?
+        new Date().toISOString().split('T')[0] : '';
+
+    var data = {
+        stepID: stepId,
+        status: status,
+        completedDate: completedDate
+    };
+
+    fetch('/api/onboarding/progress', {
+        method: 'PATCH',
+        headers: {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    })
+    .then(function(r) {
+        if (r.ok) {
+            updateStepColor(stepId, status);
+            alert('Status updated successfully');
+        } else {
+            alert('Error updating status');
+        }
+    });
+}
+
+function updateStepColor(stepId, status) {
+    var card = document
+        .getElementById('step-' + stepId);
+    if (!card) return;
+    if (status === 'Completed') {
+        card.style.borderLeft = '4px solid #86bc25';
+        card.style.background = '#f1f8e9';
+    } else if (status === 'InProgress') {
+        card.style.borderLeft = '4px solid #f57c00';
+        card.style.background = '#fff3e0';
+    } else {
+        card.style.borderLeft = '4px solid #ddd';
+        card.style.background = '#f8f9fa';
+    }
+}
+
 
 
 

@@ -108,34 +108,34 @@ namespace HROnboarding.API.Repositories
                         ROVO = sheet.Cells[row, 23]
                             .Value?.ToString(),
                         AIFluency = sheet
-                            .Cells[row, 24]
-                            .Value?.ToString(),
-                        Claude101 = sheet
                             .Cells[row, 25]
                             .Value?.ToString(),
-                        OtherAICertification = sheet
+                        Claude101 = sheet
                             .Cells[row, 26]
                             .Value?.ToString(),
-                        CoPilotTrained = sheet
+                        OtherAICertification = sheet
                             .Cells[row, 27]
                             .Value?.ToString(),
-                        ClientComplianceTrainings = sheet
+                        CoPilotTrained = sheet
                             .Cells[row, 28]
                             .Value?.ToString(),
-                        SciFormaAccess = sheet
+                        ClientComplianceTrainings = sheet
                             .Cells[row, 29]
                             .Value?.ToString(),
-                        OffboardingDate = sheet
+                        SciFormaAccess = sheet
                             .Cells[row, 30]
+                            .Value?.ToString(),
+                        OffboardingDate = sheet
+                            .Cells[row, 32]
                             .Value?.ToString(),
                         Comments = sheet
                             .Cells[row, 31]
                             .Value?.ToString(),
                         MobileNumber = sheet
-                            .Cells[row, 32]
+                            .Cells[row, 33]
                             .Value?.ToString(),
                         Replacement = sheet
-                            .Cells[row, 33]
+                            .Cells[row, 34]
                             .Value?.ToString()
                     });
                 }
@@ -214,9 +214,9 @@ namespace HROnboarding.API.Repositories
                     new FileInfo(_filePath));
 
                 ExcelWorksheet? sheet = null;
-                foreach (var ws in package.Workbook
-                    .Worksheets)
+                foreach (var ws in package.Workbook.Worksheets)
                 {
+                    Console.WriteLine("Sheet found: " + ws.Name);
                     if (ws.Name.Trim() == "TeamMember")
                     {
                         sheet = ws;
@@ -224,15 +224,24 @@ namespace HROnboarding.API.Repositories
                     }
                 }
 
+                Console.WriteLine("Sheet null: " + (sheet == null));
+
                 if (sheet == null) return;
+                if (sheet.Dimension == null) return;
 
                 for (int row = 2; row <= sheet
                     .Dimension.End.Row; row++)
                 {
-                    var id = Convert.ToInt32(
-                        sheet.Cells[row, 1].Value ?? 0);
+                    var idVal = sheet.Cells[row, 1]
+                        .Value?.ToString();
+                    int id = 0;
+                    int.TryParse(idVal, out id);
+                    Console.WriteLine("Row:" + row +
+                        " ID:" + id +
+                        " Looking for:" + member.SrNo);
                     if (id == member.SrNo)
                     {
+                        Console.WriteLine("Found row " + row);
                         sheet.Cells[row, 2].Value = member.Name;
                         sheet.Cells[row, 3].Value = member.Email;
                         sheet.Cells[row, 4].Value = member.Location;
@@ -262,13 +271,17 @@ namespace HROnboarding.API.Repositories
                         sheet.Cells[row, 28].Value = member.CoPilotTrained;
                         sheet.Cells[row, 29].Value = member.ClientComplianceTrainings;
                         sheet.Cells[row, 30].Value = member.SciFormaAccess;
-                        sheet.Cells[row, 31].Value = member.MobileNumber;
-                        sheet.Cells[row, 32].Value = member.Replacement;
-                        sheet.Cells[row, 33].Value = member.Comments;
+                        sheet.Cells[row, 31].Value = member.Comments;
+                        sheet.Cells[row, 32].Value = member.OffboardingDate;
+                        sheet.Cells[row, 33].Value = member.MobileNumber;
+                        sheet.Cells[row, 34].Value = member.Replacement;
+                        
                         break;
                     }
                 }
+                Console.WriteLine("Saving...");   
                 await package.SaveAsync();
+                Console.WriteLine("Saved!");
             }
             finally
             {
@@ -308,7 +321,7 @@ namespace HROnboarding.API.Repositories
                 sheet.Cells[newRow, 8].Value = member.LevelOriginal;
                 sheet.Cells[newRow, 9].Value = member.Level;
                 sheet.Cells[newRow, 10].Value = member.ClientLevel;
-                sheet.Cells[newRow, 11].Value = member.OnboardingDate;
+                sheet.Cells[newRow, 31].Value = member.OnboardingDate;
                 sheet.Cells[newRow, 12].Value = member.Joined;
                 sheet.Cells[newRow, 13].Value = member.JobFamily;
                 sheet.Cells[newRow, 14].Value = member.GDLeader1;
@@ -328,9 +341,11 @@ namespace HROnboarding.API.Repositories
                 sheet.Cells[newRow, 28].Value = member.CoPilotTrained;
                 sheet.Cells[newRow, 29].Value = member.ClientComplianceTrainings;
                 sheet.Cells[newRow, 30].Value = member.SciFormaAccess;
-                sheet.Cells[newRow, 31].Value = member.MobileNumber;
-                sheet.Cells[newRow, 32].Value = member.Replacement;
-                sheet.Cells[newRow, 33].Value = member.Comments;
+                sheet.Cells[newRow, 31].Value = member.Comments;
+                sheet.Cells[newRow, 32].Value = member.OffboardingDate;
+                sheet.Cells[newRow, 33].Value = member.MobileNumber;
+                sheet.Cells[newRow, 34].Value = member.Replacement;
+                
 
                 await package.SaveAsync();
             }
@@ -559,7 +574,7 @@ namespace HROnboarding.API.Repositories
                     .Worksheets)
                 {
                     if (ws.Name.Trim() ==
-                        "OnboardingProcess")
+                        "OnboardingProgress")
                     {
                         sheet = ws;
                         break;
@@ -583,9 +598,9 @@ namespace HROnboarding.API.Repositories
                             sheet.Cells[row, 3]
                             .Value ?? 0),
                         CompletedDate = sheet
-                            .Cells[row, 4]
+                            .Cells[row, 5]
                             .Value?.ToString(),
-                        Status = sheet.Cells[row, 5]
+                        Status = sheet.Cells[row, 4]
                             .Value?.ToString()
                     });
                 }
@@ -611,7 +626,7 @@ namespace HROnboarding.API.Repositories
                 foreach (var ws in package.Workbook
                     .Worksheets)
                 {
-                    if (ws.Name.Trim() == "OnboardingProcess")
+                    if (ws.Name.Trim() == "OnboardingProgress")
                     {
                         sheet = ws;
                         break;
@@ -1284,8 +1299,7 @@ namespace HROnboarding.API.Repositories
                         break;
                     }
                 }
-                if(sheet != null) return;
-
+                
                 if (sheet == null) return;
                 for (int row = 2; row <= sheet
     .Dimension.End.Row; row++)
@@ -1484,7 +1498,7 @@ namespace HROnboarding.API.Repositories
                 foreach (var ws in package.Workbook
                     .Worksheets)
                 {
-                    if (ws.Name.Trim() == "OnboardingProcess")
+                    if (ws.Name.Trim() == "OnboardingProgress")
                     {
                         sheet = ws;
                         break;
@@ -1518,6 +1532,296 @@ namespace HROnboarding.API.Repositories
             }
 
         }
+
+        public async Task AddOrUpdateProgress(
+    OnboardingProgress progress)
+        {
+            await _lock.WaitAsync();
+            try
+            {
+                using var package = new ExcelPackage(
+                    new FileInfo(_filePath));
+
+                ExcelWorksheet? sheet = null;
+                foreach (var ws in package.Workbook
+                    .Worksheets)
+                {
+                    Console.WriteLine("Sheet: " + ws.Name);
+                    if (ws.Name.Trim() == "OnboardingProgress")
+                    {
+                        sheet = ws;
+                        break;
+                    }
+                }
+
+                if (sheet == null)
+                {
+                    Console.WriteLine("Sheet not found!");
+                    return;
+                }
+
+                bool found = false;
+
+                if (sheet.Dimension != null)
+                {
+                    for (int row = 2; row <= sheet
+                        .Dimension.End.Row; row++)
+                    {
+                        var candIdVal = sheet.Cells[row, 2]
+                            .Value?.ToString();
+                        var stepIdVal = sheet.Cells[row, 3]
+                            .Value?.ToString();
+                        int candId = 0;
+                        int stepId = 0;
+                        int.TryParse(candIdVal, out candId);
+                        int.TryParse(stepIdVal, out stepId);
+
+                        if (candId == progress.CandidateID &&
+                            stepId == progress.StepID)
+                        {
+                            sheet.Cells[row, 4].Value =
+                                progress.Status;
+                            sheet.Cells[row, 5].Value =
+                                progress.CompletedDate;
+                            found = true;
+                            Console.WriteLine("Updated row " + row);
+                            break;
+                        }
+                    }
+                }
+
+                if (!found)
+                {
+                    int newRow = sheet.Dimension == null ?
+                        2 : sheet.Dimension.End.Row + 1;
+
+                    int maxId = 0;
+                    if (sheet.Dimension != null)
+                    {
+                        for (int r = 2; r <= sheet
+                            .Dimension.End.Row; r++)
+                        {
+                            var idVal = sheet.Cells[r, 1]
+                                .Value?.ToString();
+                            int id = 0;
+                            int.TryParse(idVal, out id);
+                            if (id > maxId) maxId = id;
+                        }
+                    }
+
+                    sheet.Cells[newRow, 1].Value = maxId + 1;
+                    sheet.Cells[newRow, 2].Value =
+                        progress.CandidateID;
+                    sheet.Cells[newRow, 3].Value =
+                        progress.StepID;
+                    sheet.Cells[newRow, 4].Value =
+                        progress.Status;
+                    sheet.Cells[newRow, 5].Value =
+                        progress.CompletedDate;
+                    Console.WriteLine("Added new row " + newRow);
+                }
+
+                await package.SaveAsync();
+                Console.WriteLine("Saved successfully!");
+            }
+            catch (Exception saveEx)
+            {
+                Console.WriteLine("Save error: " +
+                    saveEx.Message);
+            }
+            finally
+            {
+                _lock.Release();
+            }
+        }
+
+        public async Task<List<object>>
+    GetOnboardingStatusWithNames()
+        {
+            var members = await GetAllMembers();
+            var steps = await GetOnboardingSteps();
+            var progress = await GetOnboardingProgress();
+
+            var result = new List<object>();
+
+            foreach (var prog in progress)
+            {
+                var member = members.FirstOrDefault(
+                    m => m.SrNo == prog.CandidateID);
+                var step = steps.FirstOrDefault(
+                    s => s.StepID == prog.StepID);
+
+                if (member == null || step == null)
+                    continue;
+
+                result.Add((object)new
+                {
+                    progressID = prog.ProgressID,
+                    candidateID = prog.CandidateID,
+                    candidateName = member.Name,
+                    email = member.Email,
+                    jobFamily = member.JobFamily,
+                    project = member.Project,
+                    stepID = prog.StepID,
+                    stepName = step.StepName,
+                    stepOrder = step.StepOrder,
+                    teamName = step.TeamName,
+                    status = prog.Status ?? "NotStarted",
+                    completedDate =
+                        prog.CompletedDate ?? ""
+                });
+            }
+            return result;
+        }
+
+
+        // ADD OR UPDATE PROGRESS
+        public async Task AddOrUpdateProgresswithNames(
+            OnboardingProgress progress)
+        {
+            await _lock.WaitAsync();
+            try
+            {
+                using var package = new ExcelPackage(
+                    new FileInfo(_filePath));
+
+                ExcelWorksheet? sheet = null;
+                foreach (var ws in package.Workbook
+                    .Worksheets)
+                {
+                    if (ws.Name.Trim() == "OnboardingProgress")
+                    {
+                        sheet = ws;
+                        break;
+                    }
+                }
+
+                if (sheet == null) return;
+
+                bool found = false;
+
+                if (sheet.Dimension != null)
+                {
+                    for (int row = 2; row <= sheet
+                        .Dimension.End.Row; row++)
+                    {
+                        var candIdVal = sheet.Cells[row, 2]
+                            .Value?.ToString();
+                        var stepIdVal = sheet.Cells[row, 3]
+                            .Value?.ToString();
+                        int candId = 0;
+                        int stepId = 0;
+                        int.TryParse(candIdVal, out candId);
+                        int.TryParse(stepIdVal, out stepId);
+
+                        if (candId == progress.CandidateID &&
+                            stepId == progress.StepID)
+                        {
+                            sheet.Cells[row, 4].Value =
+                                progress.Status;
+                            sheet.Cells[row, 5].Value =
+                                progress.CompletedDate;
+                            found = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (!found)
+                {
+                    int newRow = sheet.Dimension == null ?
+                        2 : sheet.Dimension.End.Row + 1;
+
+                    int maxId = 0;
+                    if (sheet.Dimension != null)
+                    {
+                        for (int r = 2; r <= sheet
+                            .Dimension.End.Row; r++)
+                        {
+                            var idVal = sheet.Cells[r, 1]
+                                .Value?.ToString();
+                            int id = 0;
+                            int.TryParse(idVal, out id);
+                            if (id > maxId) maxId = id;
+                        }
+                    }
+
+                    sheet.Cells[newRow, 1].Value = maxId + 1;
+                    sheet.Cells[newRow, 2].Value =
+                        progress.CandidateID;
+                    sheet.Cells[newRow, 3].Value =
+                        progress.StepID;
+                    sheet.Cells[newRow, 4].Value =
+                        progress.Status;
+                    sheet.Cells[newRow, 5].Value =
+                        progress.CompletedDate;
+                }
+
+                await package.SaveAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error: " + ex.Message);
+            }
+            finally
+            {
+                _lock.Release();
+            }
+        }
+
+        public async Task DeleteProgresswithNames(
+    int candidateId, int stepId)
+        {
+            await _lock.WaitAsync();
+            try
+            {
+                using var package = new ExcelPackage(
+                    new FileInfo(_filePath));
+
+                ExcelWorksheet? sheet = null;
+                foreach (var ws in package.Workbook
+                    .Worksheets)
+                {
+                    if (ws.Name.Trim() == "OnboardingProgress")
+                    {
+                        sheet = ws;
+                        break;
+                    }
+                }
+
+                if (sheet == null) return;
+                if (sheet.Dimension == null) return;
+
+                for (int row = 2; row <= sheet
+                    .Dimension.End.Row; row++)
+                {
+                    var candIdVal = sheet.Cells[row, 2]
+                        .Value?.ToString();
+                    var stepIdVal = sheet.Cells[row, 3]
+                        .Value?.ToString();
+                    int candId = 0;
+                    int stepId2 = 0;
+                    int.TryParse(candIdVal, out candId);
+                    int.TryParse(stepIdVal, out stepId2);
+
+                    if (candId == candidateId &&
+                        stepId2 == stepId)
+                    {
+                        sheet.DeleteRow(row);
+                        break;
+                    }
+                }
+                await package.SaveAsync();
+            }
+            finally
+            {
+                _lock.Release();
+            }
+        }
+
+
+
+
 
         // DELETE OFFBOARDED
         public async Task DeleteOffboarded(int candidateId)
@@ -1682,8 +1986,11 @@ namespace HROnboarding.API.Repositories
                     {
                         sheet.Cells[row, 2].Value =
                             user.UserName;
-                        sheet.Cells[row, 3].Value =
+                        if (!string.IsNullOrEmpty(user.PasswordHash))
+                        {
+                            sheet.Cells[row, 3].Value =
                             user.PasswordHash;
+                        }
                         sheet.Cells[row, 4].Value =
                             user.Role;
                         sheet.Cells[row, 5].Value =

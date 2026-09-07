@@ -360,25 +360,52 @@
 
 <!-- TABS -->
 <div class="tab-container">
-    <button class="tab-btn active" 
+    <button class="tab-btn active"
         onclick="showTab('teamlist', event)">
         Team List
     </button>
-    <button class="tab-btn" 
+    <button class="tab-btn"
         onclick="showTab('trainingstatus', event)">
         Training Status
     </button>
-    <button class="tab-btn" 
-        onclick="showTab('onboarding', event)">
-        Onboarding Formalities
-    </button>
-    <button class="tab-btn" 
+
+    <!-- Onboarding Dropdown -->
+    <div style="display:inline-block;
+        position:relative;"
+        id="onboardingWrapper">
+        <button class="tab-btn"
+            onclick="toggleOnboarding(event)">
+            Onboarding ▾
+        </button>
+        <div id="onboardingMenu"
+            style="display:none;
+            position:absolute;
+            top:42px;left:0;
+            background:white;
+            border:1px solid #ddd;
+            border-radius:4px;
+            box-shadow:0 4px 12px rgba(0,0,0,0.15);
+            z-index:9999;
+            min-width:200px;">
+            <button class="dropdown-item"
+                onclick="openOnboardingTab('onboarding')">
+                Onboarding Formalities
+            </button>
+            <button class="dropdown-item"
+                onclick="openOnboardingTab('onboardingstatus')">
+                Onboarding Status
+            </button>
+        </div>
+    </div>
+
+    <button class="tab-btn"
         onclick="showTab('traininglinks', event)">
         Training Resources
     </button>
-    <span class="admin-only" style="display:none;white-space:nowrap;">
-        <button class="tab-btn" id="mgmtBtn"
-            onclick="showTab('management', event)">
+
+    <span class="admin-only" style="display:none">
+        <button class="tab-btn"
+            onclick="openManagement(event)">
             Management
         </button>
         <div style="display:inline-block;
@@ -387,7 +414,7 @@
                 onclick="toggleOther(event)">
                 Other ▾
             </button>
-            <div id="otherMenu" 
+            <div id="otherMenu"
                 style="display:none;
                 position:absolute;
                 top:42px;left:0;
@@ -397,31 +424,31 @@
                 box-shadow:0 4px 12px rgba(0,0,0,0.15);
                 z-index:9999;
                 min-width:180px;">
-                <button class="dropdown-item" 
+                <button class="dropdown-item"
                     onclick="openOther('gdlead')">
                     GD Lead Status
                 </button>
-                <button class="dropdown-item" 
+                <button class="dropdown-item"
                     onclick="openOther('mandatory')">
                     Mandatory Trainings
                 </button>
-                <button class="dropdown-item" 
+                <button class="dropdown-item"
                     onclick="openOther('demography')">
                     Team Demography
                 </button>
-                <button class="dropdown-item" 
+                <button class="dropdown-item"
                     onclick="openOther('activeinactive')">
                     Active-Inactive TMs
                 </button>
-                <button class="dropdown-item" 
+                <button class="dropdown-item"
                     onclick="openOther('prsd')">
                     PRSD
                 </button>
-                <button class="dropdown-item" 
+                <button class="dropdown-item"
                     onclick="openOther('projects')">
                     Projects
                 </button>
-                <button class="dropdown-item" 
+                <button class="dropdown-item"
                     onclick="openOther('users')">
                     Users
                 </button>
@@ -429,6 +456,7 @@
         </div>
     </span>
 </div>
+
 
 <!-- CONTENT -->
 <div class="content">
@@ -476,6 +504,8 @@
                             <th>AKS</th>
                             <th>ROVO</th>
                             <th>CoPilot</th>
+			    <th>SciForma</th>
+			    <th>Mobile</th>
                             <th>Comments</th>
                             <th class="admin-only" style="display:none">Actions</th>
                         </tr>
@@ -566,21 +596,93 @@
 
     <!-- TAB 3: ONBOARDING FORMALITIES -->
     <div class="tab-content" id="tab-onboarding">
-        <div class="card">
-            <div class="card-header">
-                <h3>Onboarding Formalities</h3>
-                <div class="filters">
-                    <select class="filter-select" id="teamSelector" onchange="loadOnboardingByTeam()">
-                        <option value="">-- Select Team --</option>
-                    </select>
-                    <button class="btn-add admin-only" style="display:none" onclick="showStepModal()">+ Add Step</button>
-                </div>
-            </div>
-            <div id="onboardingContent">
-                <p class="loading">Select a team to view onboarding steps</p>
+    <div class="card">
+        <div class="card-header">
+            <h3>Onboarding Formalities</h3>
+            <div class="filters">
+                <select class="filter-select"
+                    id="teamSelector"
+                    onchange="loadOnboardingByTeam()">
+                    <option value="">
+                        -- Select Team --
+                    </option>
+                </select>
+                <button class="btn-add admin-only"
+                    style="display:none"
+                    onclick="showStepModal()">
+                    + Add Step
+                </button>
             </div>
         </div>
+        <div id="onboardingContent">
+            <p class="loading">
+                Select a team to view steps
+            </p>
+        </div>
     </div>
+</div>
+
+<div class="tab-content" id="tab-onboardingstatus">
+    <div class="card">
+        <div class="card-header">
+            <h3>Onboarding Status Tracking</h3>
+            <div class="filters">
+                <select class="filter-select"
+                    id="statusCandidateFilter"
+                    onchange="applyStatusFilter()">
+                    <option value="">
+                        All Candidates
+                    </option>
+                </select>
+                <select class="filter-select"
+                    id="statusStepFilter"
+                    onchange="applyStatusFilter()">
+                    <option value="">All Status</option>
+                    <option value="NotStarted">
+                        Not Started
+                    </option>
+                    <option value="InProgress">
+                        In Progress
+                    </option>
+                    <option value="Completed">
+                        Completed
+                    </option>
+                </select>
+                <input class="search-box"
+                    type="text"
+                    id="statusSearch"
+                    placeholder="Search..."
+                    onkeyup="applyStatusFilter()">
+            </div>
+        </div>
+        <div class="table-wrapper">
+            <table id="onboardingStatusTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Job Family</th>
+                        <th>Project</th>
+                        <th>Step</th>
+                        <th>Order</th>
+                        <th>Status</th>
+                        <th>Completed Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="onboardingStatusBody">
+                    <tr><td colspan="10"
+                        class="loading">
+                        Loading...</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="pagination"
+            id="statusPagination"></div>
+    </div>
+</div>
+
 
     <!-- TAB 4: TRAINING RESOURCES -->
     <div class="tab-content" id="tab-traininglinks">
@@ -1041,7 +1143,6 @@ function populateTeamDropdowns() {
         });
     });
 }
-populateTeamDropdowns();
 
 // API helpers
 function apiGet(url) {
@@ -1145,6 +1246,7 @@ function showTab(tabName, event) {
     else if (tabName === 'projects') loadProjects();
     else if (tabName === 'users') loadUsers();
     else if (tabName === 'management') loadManagement();
+    else if(tabName === 'onboardingstatus') loadOnboardingStatus();
 }
 
 function openManagement(event) {
@@ -1237,6 +1339,8 @@ function renderTeamTable(data) {
                 '<td>' + yn(m.aksTrained) + '</td>' +
                 '<td>' + yn(m.rovo) + '</td>' +
                 '<td>' + yn(m.coPilotTrained) + '</td>' +
+		'<td>' + yn(m.sciFormaAccess) + '</td>' +
+		'<td>' + safe(m.mobileNumber) + '</td>' +
                 '<td>' + safe(m.comments) + '</td>' +
                 adminActions +
                 '</tr>';
@@ -1418,21 +1522,77 @@ function renderTrainingTable(data) {
 // ==================
 // ONBOARDING
 // ==================
-function loadOnboardingTeams() {
-    // Teams already in dropdown
+
+function toggleOnboarding(event) {
+    event.stopPropagation();
+    var menu = document
+        .getElementById('onboardingMenu');
+    menu.style.display =
+        menu.style.display === 'block' ?
+        'none' : 'block';
 }
+
+
+function openOnboardingTab(tabName) {
+    document.getElementById('onboardingMenu')
+        .style.display = 'none';
+    hideAllTabs();
+    document.querySelectorAll('.tab-btn')
+        .forEach(function(b) {
+            b.classList.remove('active');
+        });
+    var tab = document
+        .getElementById('tab-' + tabName);
+    if (tab) {
+        tab.style.display = 'block';
+        tab.classList.add('active');
+    }
+    if (tabName === 'onboarding') {
+        if (!allTeamData.length) {
+            apiGet('/api/teammember/all')
+            .then(function(data) {
+                allTeamData = data;
+                populateTeamDropdowns();
+                setTimeout(function() { loadOnboardingTeams();}, 100);
+            });
+        } else {
+            populateTeamDropdowns();
+            setTimeout(function() { loadOnboardingTeams();}, 100);
+        }
+    }
+    else if (tabName === 'onboardingstatus')
+        loadOnboardingStatus();
+}
+
+
+
+function loadOnboardingTeams() {
+    var savedTeam = localStorage
+        .getItem('selectedTeam');
+    if (savedTeam) {
+        var sel = document
+            .getElementById('teamSelector');
+        if (sel) {
+            sel.value = savedTeam;
+            loadOnboardingByTeam();
+        }
+    }
+}
+
 
 function loadOnboardingByTeam() {
     var team = document
         .getElementById('teamSelector').value;
     if (!team) return;
 
+    localStorage.setItem('selectedTeam', team);
+
     var container = document
         .getElementById('onboardingContent');
-    container.innerHTML = 
+    container.innerHTML =
         '<p class="loading">Loading...</p>';
 
-    fetch('/api/onboarding/teamsteps/' + 
+    fetch('/api/onboarding/teamsteps/' +
         encodeURIComponent(team), {
         headers: {
             'Authorization': 'Bearer ' + token
@@ -1442,40 +1602,270 @@ function loadOnboardingByTeam() {
     .then(function(steps) {
         allSteps = steps;
         if (!steps.length) {
-            container.innerHTML = 
-                '<p class="loading">No steps for this team</p>';
+            container.innerHTML =
+                '<p class="loading">No steps found</p>';
             return;
         }
-        steps.sort(function(a,b) {
+        steps.sort(function(a, b) {
             return a.stepOrder - b.stepOrder;
         });
+
         var html = '';
         steps.forEach(function(step) {
             var adminActions = role === 'Admin' ?
                 '<div style="display:flex;gap:5px;">' +
-                '<button class="btn-edit" onclick="editStep(' + step.stepID + ')">Edit</button>' +
-                '<button class="btn-delete" onclick="deleteStep(' + step.stepID + ')">Del</button>' +
+                '<button class="btn-edit" ' +
+                'onclick="editStep(' + step.stepID +
+                ')">Edit</button>' +
+                '<button class="btn-delete" ' +
+                'onclick="deleteStep(' + step.stepID +
+                ')">Del</button>' +
                 '</div>' : '';
-            html += '<div class="step-card">' +
-                '<div class="step-num">' + 
-                    step.stepOrder + '</div>' +
-                '<div class="step-info">' +
+
+            html += '<div class="step-card" ' +
+                'id="step-' + step.stepID + '">' +
+                '<div class="step-num">' +
+                step.stepOrder + '</div>' +
+                '<div class="step-info" style="flex:1;">' +
                 '<h4>' + safe(step.stepName) + '</h4>' +
                 '<p>' + safe(step.description) + '</p>' +
-                '<p style="color:#86bc25;font-size:11px;">' + 
-                    safe(step.teamName) + '</p>' +
+                '<div style="margin-top:8px;' +
+                'display:flex;gap:10px;' +
+                'align-items:center;">' +
+                '<label style="font-size:12px;' +
+                'color:#555;">Status:</label>' +
+                '<select id="stepStatus_' + 
+                step.stepID + '" ' +
+                'style="padding:4px 8px;' +
+                'border:1px solid #ddd;' +
+                'border-radius:4px;font-size:12px;">' +
+                '<option value="NotStarted">' +
+                'Not Started</option>' +
+                '<option value="InProgress">' +
+                'In Progress</option>' +
+                '<option value="Completed">' +
+                'Completed</option>' +
+                '</select>' +
+                '<button style="padding:4px 12px;' +
+                'background:#86bc25;color:white;' +
+                'border:none;border-radius:4px;' +
+                'cursor:pointer;font-size:12px;" ' +
+                'onclick="updateStepStatus(' +
+                step.stepID + ')">Save</button>' +
                 '</div>' +
                 adminActions +
-                '</div>';
+                '</div></div>';
         });
         container.innerHTML = html;
+        loadStepProgress(team);
     })
-    .catch(function(e) {
-        container.innerHTML = 
+    .catch(function() {
+        container.innerHTML =
             '<p class="error-text">Error loading steps</p>';
-        console.log('Error:', e);
     });
 }
+
+// ==================
+// ONBOARDING STATUS
+// ==================
+var allStatusData = [];
+var statusPage = 1;
+
+function loadOnboardingStatus() {
+    apiGet('/api/onboarding/statuswithnames')
+    .then(function(data) {
+        allStatusData = data;
+        statusPage = 1;
+        populateStatusFilters(data);
+        renderStatusTable(data);
+    }).catch(function() {
+        document.getElementById(
+            'onboardingStatusBody').innerHTML =
+            '<tr><td colspan="10" class="error-text">' +
+            'Error loading</td></tr>';
+    });
+}
+
+function populateStatusFilters(data) {
+    var candidates = [...new Set(data.map(
+        function(d) {
+            return d.candidateName;
+        }).filter(Boolean))].sort();
+    var sel = document
+        .getElementById('statusCandidateFilter');
+    sel.innerHTML =
+        '<option value="">All Candidates</option>';
+    candidates.forEach(function(c) {
+        sel.innerHTML +=
+            '<option value="' + c + '">' +
+            c + '</option>';
+    });
+}
+
+function applyStatusFilter() {
+    var candidate = document
+        .getElementById('statusCandidateFilter')
+        .value;
+    var status = document
+        .getElementById('statusStepFilter').value;
+    var search = document
+        .getElementById('statusSearch')
+        .value.toLowerCase();
+
+    var filtered = allStatusData.filter(function(d) {
+        return (!candidate ||
+            d.candidateName === candidate) &&
+            (!status || d.status === status) &&
+            (!search ||
+            JSON.stringify(d).toLowerCase()
+            .includes(search));
+    });
+    statusPage = 1;
+    renderStatusTable(filtered);
+}
+
+function renderStatusTable(data) {
+    var start = (statusPage - 1) * PAGE_SIZE;
+    var paged = data.slice(start, start + PAGE_SIZE);
+    var tbody = document
+        .getElementById('onboardingStatusBody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    if (!paged.length) {
+        tbody.innerHTML =
+            '<tr><td colspan="10" class="loading">' +
+            'No records found</td></tr>';
+        renderPagination('statusPagination',
+            data.length, statusPage,
+            function(p) {
+                statusPage = p;
+                renderStatusTable(data);
+            });
+        return;
+    }
+
+    paged.forEach(function(d) {
+        var statusClass =
+            d.status === 'Completed' ? 'completed' :
+            d.status === 'InProgress' ? 'inprogress' :
+            'notstarted';
+
+        var adminActions = role === 'Admin' ?
+            '<td>' +
+            '<button class="btn-edit" ' +
+            'onclick="editCandidateProgress(' +
+            d.candidateID + ',' + d.stepID +
+            ')">Edit</button>' +
+            '<button class="btn-delete" ' +
+            'onclick="deleteCandidateProgress(' +
+            d.candidateID + ',' + d.stepID +
+            ')">Del</button>' +
+            '</td>' : '<td></td>';
+
+        tbody.innerHTML += '<tr>' +
+            '<td>' + safe(d.candidateID) + '</td>' +
+            '<td>' + safe(d.candidateName) + '</td>' +
+            '<td>' + safe(d.email) + '</td>' +
+            '<td>' + safe(d.jobFamily) + '</td>' +
+            '<td>' + safe(d.project) + '</td>' +
+            '<td>' + safe(d.stepName) + '</td>' +
+            '<td>' + safe(d.stepOrder) + '</td>' +
+            '<td><span class="' + statusClass + '">' +
+            safe(d.status) + '</span></td>' +
+            '<td>' + safe(d.completedDate) + '</td>' +
+            adminActions +
+            '</tr>';
+    });
+
+    renderPagination('statusPagination',
+        data.length, statusPage,
+        function(p) {
+            statusPage = p;
+            renderStatusTable(data);
+        });
+}
+
+function editCandidateProgress(candidateId, stepId) {
+    var record = allStatusData.find(function(d) {
+        return d.candidateID == candidateId &&
+            d.stepID == stepId;
+    });
+    if (!record) {
+        alert('Record not found');
+        return;
+    }
+    document.getElementById('progressCandidateId')
+        .value = candidateId;
+    document.getElementById('progressStepId')
+        .value = stepId;
+    document.getElementById('progressCandidateName')
+        .value = record.candidateName;
+    document.getElementById('progressStepName')
+        .value = record.stepName;
+    document.getElementById('progressStatus')
+        .value = record.status || 'NotStarted';
+    document.getElementById('progressStepOrder')
+        .value = record.stepOrder || '';
+    document.getElementById('progressCompletedDate')
+        .value = record.completedDate || '';
+    document.getElementById('progressModal')
+        .classList.add('show');
+}
+
+function deleteCandidateProgress(
+    candidateId, stepId) {
+    if (!confirm('Delete this progress record?'))
+        return;
+    fetch('/api/onboarding/progress/' +
+        candidateId + '/' + stepId, {
+        method: 'DELETE',
+        headers: {
+            'Authorization': 'Bearer ' + token
+        }
+    })
+    .then(function(r) {
+        if (r.ok) loadOnboardingStatus();
+        else alert('Error deleting');
+    });
+}
+
+function saveProgress() {
+    var candidateId = document
+        .getElementById('progressCandidateId').value;
+    var stepId = document
+        .getElementById('progressStepId').value;
+    var status = document
+        .getElementById('progressStatus').value;
+    var completedDate = document
+        .getElementById('progressCompletedDate').value;
+
+    var data = {
+        candidateID: parseInt(candidateId),
+        stepID: parseInt(stepId),
+        status: status,
+        completedDate: completedDate || ''
+    };
+
+    fetch('/api/onboarding/progress/' +
+        candidateId + '/' + stepId, {
+        method: 'PATCH',
+        headers: {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    })
+    .then(function(r) {
+        if (r.ok) {
+            closeModal('progressModal');
+            loadOnboardingStatus();
+        } else {
+            alert('Error saving');
+        }
+    });
+}
+
 
 // ==================
 // TRAINING LINKS
@@ -2124,12 +2514,20 @@ function saveUser() {
         return;
     }
 
+    if (!currentEditId && !password) {
+        alert('Password is required for new user');
+        return;
+    }
+
     var data = {
         userName: username,
-        passwordHash: password,
         role: userRole,
         isActive: isActive
     };
+
+    if (password) {
+        data.passwordHash = password;
+    }
 
     var url = currentEditId ?
         '/api/users/' + currentEditId :
@@ -2148,6 +2546,23 @@ function saveUser() {
         if (r.ok) {
             closeModal('userModal');
             currentEditId = null;
+
+            // Force logout if current 
+            // user role changed
+            var currentUsername = localStorage
+                .getItem('username');
+            var currentRole = localStorage
+                .getItem('role');
+
+            if (currentUsername === username &&
+                userRole !== currentRole) {
+                alert('Your role has been changed.' +
+                    ' You will be logged out now.');
+                localStorage.clear();
+                window.location.href = 'index.html';
+                return;
+            }
+
             loadManagement();
         } else {
             alert('Error: ' + r.status);
@@ -2157,6 +2572,7 @@ function saveUser() {
         alert('Failed: ' + e);
     });
 }
+
 
 
 
@@ -2322,15 +2738,183 @@ document.addEventListener('click', function(e) {
 });
 
 
+function loadStepProgress(team) {
+    fetch('/api/onboarding/progress', {
+        headers: {
+            'Authorization': 'Bearer ' + token
+        }
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(progress) {
+        var candidateId = getCurrentCandidateId();
+        progress.forEach(function(p) {
+            var select = document
+                .getElementById(
+                    'stepStatus_' + p.stepID);
+            if (!select) return;
+            
+            if (role === 'Admin') {
+                if (select && p.status) {
+                    select.value = p.status;
+                    updateStepColor(
+                        p.stepID, p.status);
+                }
+            } else {
+                if (p.candidateID == candidateId) {
+                    select.value = p.status;
+                    updateStepColor(
+                        p.stepID, p.status);
+                }
+            }
+        });
+    })
+    .catch(function(e) {
+        console.log('Progress load error:', e);
+    });
+}
+
+
+function updateStepStatus(stepId) {
+    var candidateId = getCurrentCandidateId();
+    if (!candidateId) {
+        alert('Could not find your profile.');
+        return;
+    }
+    var select = document
+        .getElementById('stepStatus_' + stepId);
+    var status = select.value;
+    var completedDate = status === 'Completed' ?
+        new Date().toISOString().split('T')[0] : '';
+
+    var data = {
+        candidateID: candidateId,
+        stepID: stepId,
+        status: status,
+        completedDate: completedDate
+    };
+
+    fetch('/api/onboarding/progress', {
+        method: 'PATCH',
+        headers: {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    })
+    .then(function(r) {
+        if (r.ok) {
+            updateStepColor(stepId, status);
+        } else {
+            alert('Error updating status');
+        }
+    });
+}
+
+
+function updateStepColor(stepId, status) {
+    var card = document
+        .getElementById('step-' + stepId);
+    if (!card) return;
+    if (status === 'Completed') {
+        card.style.borderLeft = '4px solid #86bc25';
+        card.style.background = '#f1f8e9';
+    } else if (status === 'InProgress') {
+        card.style.borderLeft = '4px solid #f57c00';
+        card.style.background = '#fff3e0';
+    } else {
+        card.style.borderLeft = '4px solid #ddd';
+        card.style.background = '#f8f9fa';
+    }
+}
+
+function getCurrentCandidateId() {
+    var userEmail = localStorage
+        .getItem('username');
+    if (!userEmail) return null;
+    
+    var member = allTeamData.find(function(m) {
+        return m.email && 
+            m.email.toLowerCase() === 
+            userEmail.toLowerCase();
+    });
+    return member ? member.srNo : null;
+}
+
+
 
 function logout() {
+    var savedTeam = localStorage
+        .getItem('selectedTeam');
     localStorage.clear();
+    if (savedTeam) {
+        localStorage.setItem(
+            'selectedTeam', savedTeam);
+    }
     window.location.href = 'index.html';
 }
+
 
 // Load initial data
 loadTeamList();
 loadOffboarded();
 </script>
+
+<div class="modal-overlay" id="progressModal">
+    <div class="modal">
+        <h3>Edit Candidate Progress</h3>
+        <input type="hidden" id="progressCandidateId">
+        <input type="hidden" id="progressStepId">
+        <div class="form-group">
+            <label>Candidate Name</label>
+            <input type="text"
+                id="progressCandidateName"
+                readonly
+                style="background:#f5f5f5;">
+        </div>
+        <div class="form-group">
+            <label>Step Name</label>
+            <input type="text"
+                id="progressStepName"
+                readonly
+                style="background:#f5f5f5;">
+        </div>
+        <div class="form-group">
+            <label>Step Order</label>
+            <input type="number"
+                id="progressStepOrder">
+        </div>
+        <div class="form-group">
+            <label>Status</label>
+            <select id="progressStatus">
+                <option value="NotStarted">
+                    Not Started
+                </option>
+                <option value="InProgress">
+                    In Progress
+                </option>
+                <option value="Completed">
+                    Completed
+                </option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Completed Date</label>
+            <input type="date"
+                id="progressCompletedDate">
+        </div>
+        <div class="modal-actions">
+            <button class="btn-cancel"
+                onclick="closeModal('progressModal')">
+                Cancel
+            </button>
+            <button class="btn-save"
+                onclick="saveProgress()">
+                Save
+            </button>
+        </div>
+    </div>
+</div>
+
+
 </body>
 </html>

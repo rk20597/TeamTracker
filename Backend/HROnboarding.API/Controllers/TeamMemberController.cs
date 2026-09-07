@@ -61,6 +61,14 @@ namespace HROnboarding.API.Controllers
             return Ok(new { message = "Member updated" });
         }
 
+        [HttpPost]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Add([FromBody] TeamMember member)
+        { 
+            await _repo.AddTeamMember(member);
+            return Ok(new { message = "Member Added"});
+        }
+
 
 
         //[HttpGet("debug")]
