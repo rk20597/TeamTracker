@@ -360,25 +360,52 @@
 
 <!-- TABS -->
 <div class="tab-container">
-    <button class="tab-btn active" 
+    <button class="tab-btn active"
         onclick="showTab('teamlist', event)">
-        Team List
+        Active Inactive Members
     </button>
-    <button class="tab-btn" 
+    <button class="tab-btn"
         onclick="showTab('trainingstatus', event)">
         Training Status
     </button>
-    <button class="tab-btn" 
-        onclick="showTab('onboarding', event)">
-        Onboarding Formalities
-    </button>
-    <button class="tab-btn" 
-        onclick="showTab('traininglinks', event)">
-        Training Resources
-    </button>
-    <span class="admin-only" style="display:none;white-space:nowrap;">
-        <button class="tab-btn" id="mgmtBtn"
-            onclick="showTab('management', event)">
+
+    <!-- Onboarding Dropdown -->
+    <div style="display:inline-block;
+        position:relative;"
+        id="onboardingWrapper">
+        <button class="tab-btn"
+            onclick="toggleOnboarding(event)">
+            Onboarding Formalities▾
+        </button>
+        <div id="onboardingMenu"
+            style="display:none;
+            position:absolute;
+            top:42px;left:0;
+            background:white;
+            border:1px solid #ddd;
+            border-radius:4px;
+            box-shadow:0 4px 12px rgba(0,0,0,0.15);
+            z-index:9999;
+            min-width:200px;">
+            <button class="dropdown-item"
+                onclick="openOnboardingTab('onboarding')">
+                Onboarding Formalities
+            </button>
+            <button class="dropdown-item"
+                onclick="openOnboardingTab('onboardingstatus')">
+                Onboarding Status
+            </button>
+        </div>
+    </div>
+
+    <button class="tab-btn"
+        onclick="showTab('onboardedoffboarded', event)">
+        Onboarded/Offboarded
+    </button>	
+
+    <span class="admin-only" style="display:none">
+        <button class="tab-btn"
+            onclick="openManagement(event)">
             Management
         </button>
         <div style="display:inline-block;
@@ -387,7 +414,7 @@
                 onclick="toggleOther(event)">
                 Other ▾
             </button>
-            <div id="otherMenu" 
+            <div id="otherMenu"
                 style="display:none;
                 position:absolute;
                 top:42px;left:0;
@@ -397,38 +424,39 @@
                 box-shadow:0 4px 12px rgba(0,0,0,0.15);
                 z-index:9999;
                 min-width:180px;">
-                <button class="dropdown-item" 
+                <button class="dropdown-item"
                     onclick="openOther('gdlead')">
                     GD Lead Status
                 </button>
-                <button class="dropdown-item" 
+                <button class="dropdown-item"
                     onclick="openOther('mandatory')">
                     Mandatory Trainings
                 </button>
-                <button class="dropdown-item" 
+                <button class="dropdown-item"
                     onclick="openOther('demography')">
                     Team Demography
                 </button>
-                <button class="dropdown-item" 
+                <button class="dropdown-item"
                     onclick="openOther('activeinactive')">
                     Active-Inactive TMs
                 </button>
-                <button class="dropdown-item" 
+                <button class="dropdown-item"
                     onclick="openOther('prsd')">
                     PRSD
                 </button>
-                <button class="dropdown-item" 
+                <button class="dropdown-item"
                     onclick="openOther('projects')">
                     Projects
                 </button>
-                <button class="dropdown-item" 
-                    onclick="openOther('users')">
-                    Users
-                </button>
+                <button class="tab-btn"
+        	onclick="openOther('traininglinks')">
+        	Training Resources
+    		</button>
             </div>
         </div>
     </span>
 </div>
+
 
 <!-- CONTENT -->
 <div class="content">
@@ -476,6 +504,8 @@
                             <th>AKS</th>
                             <th>ROVO</th>
                             <th>CoPilot</th>
+			    <th>SciForma</th>
+			    <th>Mobile</th>
                             <th>Comments</th>
                             <th class="admin-only" style="display:none">Actions</th>
                         </tr>
@@ -487,50 +517,122 @@
             </div>
             <div class="pagination" id="teamPagination"></div>
         </div>
+	</div>
 
-        <!-- OFFBOARDED SECTION -->
-        <div class="card">
-            <div class="card-header">
-                <h3>Offboarded Members</h3>
-                <div class="filters">
-                    <input class="search-box" type="text" id="offboardSearch" placeholder="Search..." onkeyup="filterTable('offboardTable', this.value)">
-                    <button class="btn-add admin-only" style="display:none" onclick="showOffboardModal()">+ Add</button>
-                </div>
+    <!--- ONBOARDED/OFFBOARDED---->
+    <div class="tab-content" 
+    id="tab-onboardedoffboarded">
+    <div class="card">
+        <div class="card-header">
+            <h3>Onboarded Members</h3>
+            <div class="filters">
+                <select class="filter-select" 
+                    id="filterOOStatus"
+                    onchange="applyOOFilters()">
+                    <option value="">All Status</option>
+                    <option value="Active">Active</option>
+                    <option value="Inactive">Inactive</option>
+                </select>
+                <select class="filter-select"
+                    id="filterOOCity"
+                    onchange="applyOOFilters()">
+                    <option value="">All Cities</option>
+                </select>
+                <input class="search-box" 
+                    type="text"
+                    id="ooSearch"
+                    placeholder="Search..."
+                    onkeyup="applyOOFilters()">
             </div>
-            <div class="table-wrapper">
-                <table id="offboardTable">
-                    <thead>
-                        <tr>
-                            <th>Candidate ID</th>
-                            <th onclick="sortTable('offboardTable',1)">Name ↕</th>
-                            <th>Email</th>
-                            <th>Role</th>
-                            <th>Reason</th>
-                            <th class="admin-only" style="display:none">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="offboardBody">
-                        <tr><td colspan="6" class="loading">Loading...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-            <div class="pagination" id="offboardPagination"></div>
         </div>
+        <div class="table-wrapper">
+            <table id="onboardedTable">
+                <thead>
+    <tr>
+        <th>Sr#</th>
+        <th onclick="sortTable('onboardedTable',1)">
+            Name ↕
+        </th>
+        <th>Email</th>
+        <th onclick="sortTable('onboardedTable',3)">
+            Status ↕
+        </th>
+        <th>Onboarding Date</th>
+        <th>Joined</th>
+    </tr>
+</thead>
+
+                <tbody id="onboardedBody">
+                    <tr><td colspan="9" 
+                        class="loading">
+                        Loading...</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="pagination" 
+            id="onboardedPagination"></div>
     </div>
 
+    <!-- Offboarded Section -->
+    <div class="card" style="margin-top:15px;">
+        <div class="card-header">
+            <h3>Offboarded Members</h3>
+            <div class="filters">
+                <input class="search-box"
+                    type="text"
+                    id="offboardedSearch"
+                    placeholder="Search..."
+                    onkeyup="filterTable('offboardedTable2', this.value)">
+                <button class="btn-add admin-only"
+                    style="display:none"
+                    onclick="showOffboardModal()">
+                    + Add Offboarded
+                </button>
+            </div>
+        </div>
+        <div class="table-wrapper">
+            <table id="offboardedTable2">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th onclick="sortTable('offboardedTable2',1)">Name ↕</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Reason</th>
+			<th>Joined Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="offboardedBody2">
+                    <tr><td colspan="6"
+                        class="loading">
+                        Loading...</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="pagination"
+            id="offboardedPagination2"></div>
+    </div>
+</div>
+ 
     <!-- TAB 2: TRAINING STATUS -->
     <div class="tab-content" id="tab-trainingstatus">
         <div class="card">
             <div class="card-header">
                 <h3>Training Status</h3>
                 <div class="filters">
-                    <select class="filter-select" id="trainingDomainFilter" onchange="applyTrainingFilter()">
-                        <option value="">All Domains</option>
-                        <option value="Datadog">Datadog</option>
-                        <option value="AKS">AKS</option>
-                        <option value="ROVO">ROVO</option>
-                        <option value="Copilot">Copilot</option>
-                    </select>
+                    <select class="filter-select" 
+   			 id="trainingDomainFilter" onchange="applyTrainingFilter()">
+    				<option value="">All Domains</option>
+    				<option value="DataDog">DataDog</option>
+    				<option value="AKS">AKS</option>
+    				<option value="ROVO">ROVO</option>
+    				<option value="Copilot">Copilot</option>
+    				<option value="AI Fluency">AI Fluency</option>
+    				<option value="Claude 101">Claude 101</option>
+    				<option value="Client Compliance Trainings">Client Compliance Trainings</option>
+		    </select>
+
                     <select class="filter-select" id="trainingStatusFilter" onchange="applyTrainingFilter()">
                         <option value="">All Status</option>
                         <option value="Completed">Completed</option>
@@ -566,21 +668,94 @@
 
     <!-- TAB 3: ONBOARDING FORMALITIES -->
     <div class="tab-content" id="tab-onboarding">
-        <div class="card">
-            <div class="card-header">
-                <h3>Onboarding Formalities</h3>
-                <div class="filters">
-                    <select class="filter-select" id="teamSelector" onchange="loadOnboardingByTeam()">
-                        <option value="">-- Select Team --</option>
-                    </select>
-                    <button class="btn-add admin-only" style="display:none" onclick="showStepModal()">+ Add Step</button>
-                </div>
-            </div>
-            <div id="onboardingContent">
-                <p class="loading">Select a team to view onboarding steps</p>
+    <div class="card">
+        <div class="card-header">
+            <h3>Onboarding Formalities</h3>
+            <div class="filters">
+                <select class="filter-select"
+                    id="teamSelector"
+                    onchange="loadOnboardingByTeam()">
+                    <option value="">
+                        -- Select Team --
+                    </option>
+                </select>
+                <button class="btn-add admin-only"
+                    style="display:none"
+                    onclick="showStepModal()">
+                    + Add Step
+                </button>
             </div>
         </div>
+        <div id="onboardingContent">
+            <p class="loading">
+                Select a team to view steps
+            </p>
+        </div>
     </div>
+</div>
+
+<div class="tab-content" id="tab-onboardingstatus">
+    <div class="card">
+        <div class="card-header">
+            <h3>Onboarding Status Tracking</h3>
+            <div class="filters">
+                <select class="filter-select"
+                    id="statusCandidateFilter"
+                    onchange="applyStatusFilter()">
+                    <option value="">
+                        All Candidates
+                    </option>
+                </select>
+                <select class="filter-select"
+                    id="statusStepFilter"
+                    onchange="applyStatusFilter()">
+                    <option value="">All Status</option>
+                    <option value="NotStarted">
+                        Not Started
+                    </option>
+                    <option value="InProgress">
+                        In Progress
+                    </option>
+                    <option value="Completed">
+                        Completed
+                    </option>
+                </select>
+                <input class="search-box"
+                    type="text"
+                    id="statusSearch"
+                    placeholder="Search..."
+                    onkeyup="applyStatusFilter()">
+            </div>
+        </div>
+        <div class="table-wrapper">
+            <table id="onboardingStatusTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+			<th>Onboarding Date</th>
+                        <th>Job Family</th>
+                        <th>Project</th>
+                        <th>Step</th>
+                        <th>Order</th>
+                        <th>Status</th>
+                        <th>Completed Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="onboardingStatusBody">
+                    <tr><td colspan="10"
+                        class="loading">
+                        Loading...</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="pagination"
+            id="statusPagination"></div>
+    </div>
+</div>
+
 
     <!-- TAB 4: TRAINING RESOURCES -->
     <div class="tab-content" id="tab-traininglinks">
@@ -611,18 +786,21 @@
     <div class="tab-content" id="tab-management">
         <div class="card">
             <div class="card-header">
-                <h3>Management</h3>
-                <div class="filters">
-                    <select class="filter-select" id="mgmtSection" onchange="loadManagement()">
-                        <option value="steps">Onboarding Steps</option>
-                        <option value="offboarded">Offboarded</option>
-                        <option value="users">Users</option>
-                    </select>
-                </div>
-            </div>
-            <div id="managementContent">
-                <p class="loading">Loading...</p>
-            </div>
+    		<h3>Users Management</h3>
+    		<div class="filters">
+        		<input class="search-box" type="text" 
+            			placeholder="Search..." 
+            			onkeyup="filterTable('mgmtUsersTable', this.value)">
+        		<button class="btn-add" 
+            			onclick="showUserModal()">
+            				+ Add User
+        		</button>
+    </div>
+</div>
+<div id="managementContent">
+    <p class="loading">Loading...</p>
+</div>
+
         </div>
     </div>
 
@@ -698,6 +876,8 @@
             </div>
         </div>
     </div>
+
+    
 
     <!-- ADMIN: PRSD -->
     <div class="tab-content" id="tab-prsd">
@@ -813,7 +993,7 @@
             <div class="form-group"><label>GD Leader 1</label><input type="text" id="mGD1"></div>
             <div class="form-group"><label>GD Leader 2</label><input type="text" id="mGD2"></div>
             <div class="form-group"><label>GD Leader 3</label><input type="text" id="mGD3"></div>
-            <div class="form-group"><label>Onboarding Date</label><input type="date" id="mOnboardDate"></div>
+            <div class="form-group"><label>Onboarding Date</label><input type="date" id="mOnboardDate" placeholder="e.g. 24-07-2026"></div>
             <div class="form-group"><label>Joined (Y/N)</label><select id="mJoined"><option>Y</option><option>N</option></select></div>
             <div class="form-group"><label>Mobile Number</label><input type="text" id="mMobile"></div>
             <div class="form-group"><label>Datadog</label><select id="mDatadog"><option>Y</option><option>N</option><option>N/A</option></select></div>
@@ -832,18 +1012,45 @@
 <!-- Offboard Modal -->
 <div class="modal-overlay" id="offboardModal">
     <div class="modal">
-        <h3>Add Offboarded Member</h3>
-        <div class="form-group"><label>Candidate ID</label><input type="number" id="obCandidateId"></div>
-        <div class="form-group"><label>Name</label><input type="text" id="obName"></div>
-        <div class="form-group"><label>Email</label><input type="email" id="obEmail"></div>
-        <div class="form-group"><label>Role</label><input type="text" id="obRole"></div>
-        <div class="form-group"><label>Reason</label><textarea id="obReason" rows="3"></textarea></div>
+        <h3>Add/Edit Offboarded Member</h3>
+        <div class="form-group">
+            <label>Select Member</label>
+            <select id="obCandidateSelect"
+                onchange="fillOffboardDetails(this)">
+                <option value="">Select Member</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Name</label>
+            <input type="text" id="obName" readonly
+                style="background:#f5f5f5;">
+        </div>
+        <div class="form-group">
+            <label>Email</label>
+            <input type="email" id="obEmail" readonly
+                style="background:#f5f5f5;">
+        </div>
+        <div class="form-group">
+            <label>Role</label>
+            <input type="text" id="obRole">
+        </div>
+        <div class="form-group">
+            <label>Reason</label>
+            <textarea id="obReason" rows="3"></textarea>
+        </div>
         <div class="modal-actions">
-            <button class="btn-cancel" onclick="closeModal('offboardModal')">Cancel</button>
-            <button class="btn-save" onclick="saveOffboard()">Save</button>
+            <button class="btn-cancel"
+                onclick="closeModal('offboardModal')">
+                Cancel
+            </button>
+            <button class="btn-save"
+                onclick="saveOffboard()">
+                Save
+            </button>
         </div>
     </div>
 </div>
+
 
 <!-- Training Modal -->
 <div class="modal-overlay" id="trainingModal">
@@ -858,14 +1065,15 @@
         <div class="form-group">
             <label>Domain</label>
             <select id="tsDomain">
-                <option>Datadog</option>
-                <option>AKS</option>
-                <option>ROVO</option>
-                <option>Copilot</option>
-                <option>AI Fluency</option>
-                <option>Claude 101</option>
-                <option>Github Copilot</option>
-            </select>
+    		<option value="DataDog">DataDog</option>
+    		<option value="AKS">AKS</option>
+    		<option value="ROVO">ROVO</option>
+    		<option value="Copilot">Copilot</option>
+    		<option value="AI Fluency">AI Fluency</option>
+    		<option value="Claude 101">Claude 101</option>
+    		<option value="Client Compliance Trainings">Client Compliance Trainings</option>
+	    </select>
+
         </div>
         <div class="form-group">
             <label>Status</label>
@@ -1016,6 +1224,11 @@ var allSteps = [];
 var currentEditId = null;
 var currentEditType = null;
 var originalTrainingData = [];
+var allOOData = [];
+var ooPage = 1;
+var allOffboardedData2 = [];
+var offboardedPage2 = 1;
+
 
 // Project teams for dropdown
 var projectTeams = [
@@ -1041,7 +1254,6 @@ function populateTeamDropdowns() {
         });
     });
 }
-populateTeamDropdowns();
 
 // API helpers
 function apiGet(url) {
@@ -1145,6 +1357,8 @@ function showTab(tabName, event) {
     else if (tabName === 'projects') loadProjects();
     else if (tabName === 'users') loadUsers();
     else if (tabName === 'management') loadManagement();
+    else if(tabName === 'onboardingstatus') loadOnboardingStatus();
+    else if(tabName === 'onboardedoffboarded') loadOnboardedOffboarded();
 }
 
 function openManagement(event) {
@@ -1156,10 +1370,190 @@ function openManagement(event) {
     mgmtTab.classList.add('active');
     if (event && event.target)
         event.target.classList.add('active');
-    document.getElementById('mgmtSection')
-        .value = 'steps';
-    loadManagement();
+
+    // Load team data if not loaded
+    if (!allTeamData.length) {
+        apiGet('/api/teammember/all')
+        .then(function(data) {
+            allTeamData = data;
+            loadManagementUsers();
+        });
+    } else {
+        loadManagementUsers();
+    }
 }
+
+
+//====================
+//ONBOARDED/OFFBOARDED
+//====================
+function loadOnboardedOffboarded() {
+    if (!allTeamData.length) {
+        apiGet('/api/teammember/all')
+        .then(function(data) {
+            allTeamData = data;
+            populateOOFilters(data);
+            ooPage = 1;
+            renderOOTable(data);
+            loadOffboarded2();
+        });
+    } else {
+        populateOOFilters(allTeamData);
+        ooPage = 1;
+        renderOOTable(allTeamData);
+        loadOffboarded2();
+    }
+}
+
+function populateOOFilters(data) {
+    var cities = [...new Set(data.map(
+        function(m) { return m.city; })
+        .filter(Boolean))].sort();
+    var sel = document
+        .getElementById('filterOOCity');
+    sel.innerHTML = 
+        '<option value="">All Cities</option>';
+    cities.forEach(function(c) {
+        sel.innerHTML += 
+            '<option value="' + c + '">' + 
+            c + '</option>';
+    });
+}
+
+function applyOOFilters() {
+    var status = document
+        .getElementById('filterOOStatus').value;
+    var city = document
+        .getElementById('filterOOCity').value;
+    var search = document
+        .getElementById('ooSearch')
+        .value.toLowerCase();
+
+    var filtered = allOOData.filter(function(m) {
+        return (!status || m.status === status) &&
+            (!city || m.city === city) &&
+            (!search || JSON.stringify(m)
+            .toLowerCase().includes(search));
+    });
+    ooPage = 1;
+    renderOOTable(filtered);
+}
+
+function renderOOTable(data) {
+    var start = (ooPage - 1) * PAGE_SIZE;
+    var paged = data.slice(start, start + PAGE_SIZE);
+    var tbody = document
+        .getElementById('onboardedBody');
+    tbody.innerHTML = '';
+
+    if (!paged.length) {
+        tbody.innerHTML = 
+            '<tr><td colspan="9" class="loading">' +
+            'No data found</td></tr>';
+        renderPagination('onboardedPagination',
+            data.length, ooPage, function(p) {
+                ooPage = p;
+                renderOOTable(data);
+            });
+        return;
+    }
+
+    paged.forEach(function(m) {
+    tbody.innerHTML += '<tr>' +
+        '<td>' + safe(m.srNo) + '</td>' +
+        '<td>' + safe(m.name) + '</td>' +
+        '<td>' + safe(m.email) + '</td>' +
+        '<td><span class="' +
+        (m.status === 'Active' ?
+        'status-active' : 'status-inactive') +
+        '">' + safe(m.status) + '</span></td>' +
+        '<td>' + safe(m.onboardingDate) + '</td>' +
+        '<td>' + safe(m.joined) + '</td>' +
+        '</tr>';
+    });
+
+
+    renderPagination('onboardedPagination',
+        data.length, ooPage, function(p) {
+            ooPage = p;
+            renderOOTable(data);
+        });
+}
+
+function loadOffboarded2() {
+    apiGet('/api/offboarded')
+    .then(function(data) {
+        allOffboardedData2 = data;
+        offboardedPage2 = 1;
+        renderOffboarded2(data);
+    });
+}
+
+function renderOffboarded2(data) {
+    var start = (offboardedPage2 - 1) * PAGE_SIZE;
+    var paged = data.slice(start, start + PAGE_SIZE);
+    var tbody = document
+        .getElementById('offboardedBody2');
+    tbody.innerHTML = '';
+
+    if (!paged.length) {
+        tbody.innerHTML = 
+            '<tr><td colspan="6" class="loading">' +
+            'No data found</td></tr>';
+        renderPagination('offboardedPagination2',
+            data.length, offboardedPage2, function(p) {
+                offboardedPage2 = p;
+                renderOffboarded2(data);
+            });
+        return;
+    }
+
+    paged.forEach(function(m) {
+    var id = m.candidateId || m.candidateID || 0;
+    
+    // Get onboarding date from TeamMember
+    var teamMember = allTeamData.find(function(t) {
+        return t.email && m.email && 
+            t.email.toLowerCase() === 
+            m.email.toLowerCase();
+    });
+    var joinedDate = teamMember ? 
+        safe(teamMember.onboardingDate) : '';
+
+    var adminActions = role === 'Admin' ?
+        '<td><button class="btn-edit" ' +
+        'onclick="editOffboard(' + id + 
+        ')">Edit</button>' +
+        '<button class="btn-delete" ' +
+        'onclick="deleteOffboard(' + id + 
+        ')">Del</button></td>' : '<td></td>';
+
+    tbody.innerHTML += '<tr>' +
+        '<td>' + safe(id) + '</td>' +
+        '<td>' + safe(m.name) + '</td>' +
+        '<td>' + safe(m.email) + '</td>' +
+        '<td>' + safe(m.role) + '</td>' +
+        '<td>' + safe(m.reason) + '</td>' +
+        '<td>' + joinedDate + '</td>' +
+        adminActions + '</tr>';
+});
+
+
+    renderPagination('offboardedPagination2',
+        data.length, offboardedPage2, function(p) {
+            offboardedPage2 = p;
+            renderOffboarded2(data);
+        });
+}
+
+function fillOffboardDetails(select) {
+    var option = select.options[select.selectedIndex];
+    document.getElementById('obName').value = 
+        option.getAttribute('data-name') || '';
+    document.getElementById('obEmail').value = 
+        option.getAttribute('data-email') || '';
+}
+
 
 
 // ==================
@@ -1237,6 +1631,8 @@ function renderTeamTable(data) {
                 '<td>' + yn(m.aksTrained) + '</td>' +
                 '<td>' + yn(m.rovo) + '</td>' +
                 '<td>' + yn(m.coPilotTrained) + '</td>' +
+		'<td>' + yn(m.sciFormaAccess) + '</td>' +
+		'<td>' + safe(m.mobileNumber) + '</td>' +
                 '<td>' + safe(m.comments) + '</td>' +
                 adminActions +
                 '</tr>';
@@ -1286,10 +1682,16 @@ function renderOffboardTable(data) {
     paged.forEach(function(m) {
         var id = m.candidateId || 
             m.candidateID || 0;
-        var adminActions = role === 'Admin' ?
-            '<td><button class="btn-delete" ' +
-            'onclick="deleteOffboard(' + id + 
-            ')">Del</button></td>' : '<td></td>';
+        var adminActions = localStorage.getItem('role') === 'Admin' ?
+    		'<td>' +
+    		'<button class="btn-edit" ' +
+    		'onclick="editOffboard(' + id + 
+    		')">Edit</button>' +
+    		'<button class="btn-delete" ' +
+    		'onclick="deleteOffboard(' + id + 
+    		')">Del</button>' +
+    		'</td>' : '<td></td>';
+
 
         tbody.innerHTML += '<tr>' +
             '<td>' + id + '</td>' +
@@ -1307,6 +1709,32 @@ function renderOffboardTable(data) {
             renderOffboardTable(data);
         });
 }
+
+
+function editOffboard(id) {
+    var record = allOffboardedData2.find(
+        function(m) {
+            return (m.candidateId || 
+                m.candidateID) == id;
+        });
+    if (!record) {
+        alert('Record not found');
+        return;
+    }
+    currentEditId = id;
+    
+    // Populate dropdown
+    if (!allTeamData.length) {
+        apiGet('/api/teammember/all')
+        .then(function(data) {
+            allTeamData = data;
+            showOffboardModal(record);
+        });
+    } else {
+        showOffboardModal(record);
+    }
+}
+
 
 // ==================
 // TRAINING STATUS
@@ -1360,10 +1788,22 @@ function renderTrainingTable(data) {
     }
 
     paged.forEach(function(t) {
-        var overdue = t.isOverdue || 
-            (!t.completedDate && t.dueDate && 
-            new Date(t.dueDate) < new Date() && 
-            t.status !== 'Completed');
+        var dueDate = t.dueDate ? 
+    new Date(t.dueDate.split(' ')[0]) : null;
+var completedDate = t.completedDate ? 
+    new Date(t.completedDate.split(' ')[0]) : null;
+
+var overdue = false;
+if (dueDate) {
+    if (t.status === 'Completed' && completedDate) {
+        // Completed but after due date
+        overdue = completedDate > dueDate;
+    } else if (t.status !== 'Completed') {
+        // Not completed and due date passed
+        overdue = dueDate < new Date();
+    }
+}
+
 
         var dueDateDisplay = '';
 		if (t.dueDate) {
@@ -1418,21 +1858,77 @@ function renderTrainingTable(data) {
 // ==================
 // ONBOARDING
 // ==================
-function loadOnboardingTeams() {
-    // Teams already in dropdown
+
+function toggleOnboarding(event) {
+    event.stopPropagation();
+    var menu = document
+        .getElementById('onboardingMenu');
+    menu.style.display =
+        menu.style.display === 'block' ?
+        'none' : 'block';
 }
+
+
+function openOnboardingTab(tabName) {
+    document.getElementById('onboardingMenu')
+        .style.display = 'none';
+    hideAllTabs();
+    document.querySelectorAll('.tab-btn')
+        .forEach(function(b) {
+            b.classList.remove('active');
+        });
+    var tab = document
+        .getElementById('tab-' + tabName);
+    if (tab) {
+        tab.style.display = 'block';
+        tab.classList.add('active');
+    }
+    if (tabName === 'onboarding') {
+        if (!allTeamData.length) {
+            apiGet('/api/teammember/all')
+            .then(function(data) {
+                allTeamData = data;
+                populateTeamDropdowns();
+                setTimeout(function() { loadOnboardingTeams();}, 100);
+            });
+        } else {
+            populateTeamDropdowns();
+            setTimeout(function() { loadOnboardingTeams();}, 100);
+        }
+    }
+    else if (tabName === 'onboardingstatus')
+        loadOnboardingStatus();
+}
+
+
+
+function loadOnboardingTeams() {
+    var savedTeam = localStorage
+        .getItem('selectedTeam');
+    if (savedTeam) {
+        var sel = document
+            .getElementById('teamSelector');
+        if (sel) {
+            sel.value = savedTeam;
+            loadOnboardingByTeam();
+        }
+    }
+}
+
 
 function loadOnboardingByTeam() {
     var team = document
         .getElementById('teamSelector').value;
     if (!team) return;
 
+    localStorage.setItem('selectedTeam', team);
+
     var container = document
         .getElementById('onboardingContent');
-    container.innerHTML = 
+    container.innerHTML =
         '<p class="loading">Loading...</p>';
 
-    fetch('/api/onboarding/teamsteps/' + 
+    fetch('/api/onboarding/teamsteps/' +
         encodeURIComponent(team), {
         headers: {
             'Authorization': 'Bearer ' + token
@@ -1442,40 +1938,271 @@ function loadOnboardingByTeam() {
     .then(function(steps) {
         allSteps = steps;
         if (!steps.length) {
-            container.innerHTML = 
-                '<p class="loading">No steps for this team</p>';
+            container.innerHTML =
+                '<p class="loading">No steps found</p>';
             return;
         }
-        steps.sort(function(a,b) {
+        steps.sort(function(a, b) {
             return a.stepOrder - b.stepOrder;
         });
+
         var html = '';
         steps.forEach(function(step) {
             var adminActions = role === 'Admin' ?
                 '<div style="display:flex;gap:5px;">' +
-                '<button class="btn-edit" onclick="editStep(' + step.stepID + ')">Edit</button>' +
-                '<button class="btn-delete" onclick="deleteStep(' + step.stepID + ')">Del</button>' +
+                '<button class="btn-edit" ' +
+                'onclick="editStep(' + step.stepID +
+                ')">Edit</button>' +
+                '<button class="btn-delete" ' +
+                'onclick="deleteStep(' + step.stepID +
+                ')">Del</button>' +
                 '</div>' : '';
-            html += '<div class="step-card">' +
-                '<div class="step-num">' + 
-                    step.stepOrder + '</div>' +
-                '<div class="step-info">' +
+
+            html += '<div class="step-card" ' +
+                'id="step-' + step.stepID + '">' +
+                '<div class="step-num">' +
+                step.stepOrder + '</div>' +
+                '<div class="step-info" style="flex:1;">' +
                 '<h4>' + safe(step.stepName) + '</h4>' +
                 '<p>' + safe(step.description) + '</p>' +
-                '<p style="color:#86bc25;font-size:11px;">' + 
-                    safe(step.teamName) + '</p>' +
+                '<div style="margin-top:8px;' +
+                'display:flex;gap:10px;' +
+                'align-items:center;">' +
+                '<label style="font-size:12px;' +
+                'color:#555;">Status:</label>' +
+                '<select id="stepStatus_' + 
+                step.stepID + '" ' +
+                'style="padding:4px 8px;' +
+                'border:1px solid #ddd;' +
+                'border-radius:4px;font-size:12px;">' +
+                '<option value="NotStarted">' +
+                'Not Started</option>' +
+                '<option value="InProgress">' +
+                'In Progress</option>' +
+                '<option value="Completed">' +
+                'Completed</option>' +
+                '</select>' +
+                '<button style="padding:4px 12px;' +
+                'background:#86bc25;color:white;' +
+                'border:none;border-radius:4px;' +
+                'cursor:pointer;font-size:12px;" ' +
+                'onclick="updateStepStatus(' +
+                step.stepID + ')">Save</button>' +
                 '</div>' +
                 adminActions +
-                '</div>';
+                '</div></div>';
         });
         container.innerHTML = html;
+        loadStepProgress(team);
     })
-    .catch(function(e) {
-        container.innerHTML = 
+    .catch(function() {
+        container.innerHTML =
             '<p class="error-text">Error loading steps</p>';
-        console.log('Error:', e);
     });
 }
+
+// ==================
+// ONBOARDING STATUS
+// ==================
+var allStatusData = [];
+var statusPage = 1;
+
+function loadOnboardingStatus() {
+    apiGet('/api/onboarding/statuswithnames')
+    .then(function(data) {
+        allStatusData = data;
+        statusPage = 1;
+        populateStatusFilters(data);
+        renderStatusTable(data);
+    }).catch(function() {
+        document.getElementById(
+            'onboardingStatusBody').innerHTML =
+            '<tr><td colspan="10" class="error-text">' +
+            'Error loading</td></tr>';
+    });
+}
+
+function populateStatusFilters(data) {
+    var candidates = [...new Set(data.map(
+        function(d) {
+            return d.candidateName;
+        }).filter(Boolean))].sort();
+    var sel = document
+        .getElementById('statusCandidateFilter');
+    sel.innerHTML =
+        '<option value="">All Candidates</option>';
+    candidates.forEach(function(c) {
+        sel.innerHTML +=
+            '<option value="' + c + '">' +
+            c + '</option>';
+    });
+}
+
+function applyStatusFilter() {
+    var candidate = document
+        .getElementById('statusCandidateFilter')
+        .value;
+    var status = document
+        .getElementById('statusStepFilter').value;
+    var search = document
+        .getElementById('statusSearch')
+        .value.toLowerCase();
+
+    var filtered = allStatusData.filter(function(d) {
+        return (!candidate ||
+            d.candidateName === candidate) &&
+            (!status || d.status === status) &&
+            (!search ||
+            JSON.stringify(d).toLowerCase()
+            .includes(search));
+    });
+    statusPage = 1;
+    renderStatusTable(filtered);
+}
+
+function renderStatusTable(data) {
+    var start = (statusPage - 1) * PAGE_SIZE;
+    var paged = data.slice(start, start + PAGE_SIZE);
+    var tbody = document
+        .getElementById('onboardingStatusBody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    if (!paged.length) {
+        tbody.innerHTML =
+            '<tr><td colspan="10" class="loading">' +
+            'No records found</td></tr>';
+        renderPagination('statusPagination',
+            data.length, statusPage,
+            function(p) {
+                statusPage = p;
+                renderStatusTable(data);
+            });
+        return;
+    }
+
+    paged.forEach(function(d) {
+        var statusClass =
+            d.status === 'Completed' ? 'completed' :
+            d.status === 'InProgress' ? 'inprogress' :
+            'notstarted';
+
+        var adminActions = role === 'Admin' ?
+            '<td>' +
+            '<button class="btn-edit" ' +
+            'onclick="editCandidateProgress(' +
+            d.candidateID + ',' + d.stepID +
+            ')">Edit</button>' +
+            '<button class="btn-delete" ' +
+            'onclick="deleteCandidateProgress(' +
+            d.candidateID + ',' + d.stepID +
+            ')">Del</button>' +
+            '</td>' : '<td></td>';
+
+        tbody.innerHTML += '<tr>' +
+            '<td>' + safe(d.candidateID) + '</td>' +
+            '<td>' + safe(d.candidateName) + '</td>' +
+            '<td>' + safe(d.email) + '</td>' +
+	    '<td>' + safe(d.onboardingDate) + '</td>' +
+            '<td>' + safe(d.jobFamily) + '</td>' +
+            '<td>' + safe(d.project) + '</td>' +
+            '<td>' + safe(d.stepName) + '</td>' +
+            '<td>' + safe(d.stepOrder) + '</td>' +
+            '<td><span class="' + statusClass + '">' +
+            safe(d.status) + '</span></td>' +
+            '<td>' + safe(d.completedDate) + '</td>' +
+            adminActions +
+            '</tr>';
+    });
+
+    renderPagination('statusPagination',
+        data.length, statusPage,
+        function(p) {
+            statusPage = p;
+            renderStatusTable(data);
+        });
+}
+
+function editCandidateProgress(candidateId, stepId) {
+    var record = allStatusData.find(function(d) {
+        return d.candidateID == candidateId &&
+            d.stepID == stepId;
+    });
+    if (!record) {
+        alert('Record not found');
+        return;
+    }
+    document.getElementById('progressCandidateId')
+        .value = candidateId;
+    document.getElementById('progressStepId')
+        .value = stepId;
+    document.getElementById('progressCandidateName')
+        .value = record.candidateName;
+    document.getElementById('progressStepName')
+        .value = record.stepName;
+    document.getElementById('progressStatus')
+        .value = record.status || 'NotStarted';
+    document.getElementById('progressStepOrder')
+        .value = record.stepOrder || '';
+    document.getElementById('progressCompletedDate')
+        .value = record.completedDate || '';
+    document.getElementById('progressModal')
+        .classList.add('show');
+}
+
+function deleteCandidateProgress(
+    candidateId, stepId) {
+    if (!confirm('Delete this progress record?'))
+        return;
+    fetch('/api/onboarding/progress/' +
+        candidateId + '/' + stepId, {
+        method: 'DELETE',
+        headers: {
+            'Authorization': 'Bearer ' + token
+        }
+    })
+    .then(function(r) {
+        if (r.ok) loadOnboardingStatus();
+        else alert('Error deleting');
+    });
+}
+
+function saveProgress() {
+    var candidateId = document
+        .getElementById('progressCandidateId').value;
+    var stepId = document
+        .getElementById('progressStepId').value;
+    var status = document
+        .getElementById('progressStatus').value;
+    var completedDate = document
+        .getElementById('progressCompletedDate').value;
+
+    var data = {
+        candidateID: parseInt(candidateId),
+        stepID: parseInt(stepId),
+        status: status,
+        completedDate: completedDate || ''
+    };
+
+    fetch('/api/onboarding/progress/' +
+        candidateId + '/' + stepId, {
+        method: 'PATCH',
+        headers: {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    })
+    .then(function(r) {
+        if (r.ok) {
+            closeModal('progressModal');
+            loadOnboardingStatus();
+        } else {
+            alert('Error saving');
+        }
+    });
+}
+
 
 // ==================
 // TRAINING LINKS
@@ -1533,85 +2260,28 @@ function loadTrainingLinks() {
 // ==================
 // MANAGEMENT TAB
 // ==================
-function loadManagement() {
-    var section = document
-        .getElementById('mgmtSection').value;
+function loadManagementUsers() {
     var container = document
         .getElementById('managementContent');
     container.innerHTML = 
         '<p class="loading">Loading...</p>';
 
-    if (section === 'steps') {
-        var html = '<div style="margin-bottom:15px;">' +
-            '<select class="filter-select" ' +
-            'id="mgmtTeamSel" ' +
-            'onchange="loadMgmtSteps()" ' +
-            'style="min-width:200px;">' +
-            '<option value="">Select Team</option>';
-        projectTeams.forEach(function(t) {
-            html += '<option value="' + t + '">' + 
-                t + '</option>';
-        });
-        html += '</select>' +
-            '<button class="btn-add" ' +
-            'style="margin-left:10px;" ' +
-            'onclick="showStepModal()">' +
-            '+ Add Step</button></div>' +
-            '<div id="mgmtStepsContent"></div>';
-        container.innerHTML = html;
+    apiGet('/api/users')
+    .then(function(data) {
+        var html = '<div class="table-wrapper">' +
+            '<table id="mgmtUsersTable">' +
+            '<thead><tr>' +
+            '<th>ID</th>' +
+            '<th>Username</th>' +
+            '<th>Role</th>' +
+            '<th>Active</th>' +
+            '<th>Actions</th>' +
+            '</tr></thead><tbody>';
 
-    } else if (section === 'offboarded') {
-        apiGet('/api/offboarded')
-        .then(function(data) {
-            var html = 
-                '<button class="btn-add" ' +
-                'style="margin-bottom:15px;" ' +
-                'onclick="showOffboardModal()">' +
-                '+ Add</button>' +
-                '<div class="table-wrapper">' +
-                '<table><thead><tr>' +
-                '<th>ID</th><th>Name</th>' +
-                '<th>Email</th><th>Role</th>' +
-                '<th>Reason</th><th>Actions</th>' +
-                '</tr></thead><tbody>';
-            if (!data || !data.length) {
-                html += '<tr><td colspan="6" ' +
-                    'class="loading">No data</td></tr>';
-            } else {
-                data.forEach(function(m) {
-                    html += '<tr>' +
-                        '<td>' + safe(m.candidateId) + '</td>' +
-                        '<td>' + safe(m.name) + '</td>' +
-                        '<td>' + safe(m.email) + '</td>' +
-                        '<td>' + safe(m.role) + '</td>' +
-                        '<td>' + safe(m.reason) + '</td>' +
-                        '<td><button class="btn-delete" ' +
-                        'onclick="deleteOffboard(' + 
-                        m.candidateId + ')">Del</button>' +
-                        '</td></tr>';
-                });
-            }
-            html += '</tbody></table></div>';
-            container.innerHTML = html;
-        }).catch(function() {
-            container.innerHTML = 
-                '<p class="error-text">Error loading</p>';
-        });
-
-    } else if (section === 'users') {
-        apiGet('/api/users')
-        .then(function(data) {
-            var html = 
-                '<button class="btn-add" ' +
-                'style="margin-bottom:15px;" ' +
-                'onclick="showUserModal()">' +
-                '+ Add User</button>' +
-                '<div class="table-wrapper">' +
-                '<table><thead><tr>' +
-                '<th>ID</th><th>Username</th>' +
-                '<th>Role</th><th>Active</th>' +
-                '<th>Actions</th>' +
-                '</tr></thead><tbody>';
+        if (!data || !data.length) {
+            html += '<tr><td colspan="5" ' +
+                'class="loading">No users</td></tr>';
+        } else {
             data.forEach(function(u) {
                 html += '<tr>' +
                     '<td>' + safe(u.userID) + '</td>' +
@@ -1627,14 +2297,16 @@ function loadManagement() {
                     ')">Del</button>' +
                     '</td></tr>';
             });
-            html += '</tbody></table></div>';
-            container.innerHTML = html;
-        }).catch(function() {
-            container.innerHTML = 
-                '<p class="error-text">Error loading</p>';
-        });
-    }
+        }
+        html += '</tbody></table></div>';
+        container.innerHTML = html;
+    });
 }
+
+
+function loadManagement() {
+	loadManagementUsers();
+    }
 
 
 // ==================
@@ -1820,6 +2492,8 @@ function showMemberModal(data) {
         document.getElementById('mGD1').value = data.gdLeader1 || '';
         document.getElementById('mGD2').value = data.gdLeader2 || '';
         document.getElementById('mGD3').value = data.gdLeader3 || '';
+	document.getElementById('mOnboardDate').value = data.onboardingDate || '';
+	document.getElementById('mJoined').value = data.joined || 'N';
         document.getElementById('mMobile').value = data.mobileNumber || '';
         document.getElementById('mComments').value = data.comments || '';
     } else {
@@ -1841,6 +2515,8 @@ function saveMember() {
         gdLeader1: document.getElementById('mGD1').value,
         gdLeader2: document.getElementById('mGD2').value,
         gdLeader3: document.getElementById('mGD3').value,
+	onboardingDate: document.getElementById('mOnboardDate').value,
+	joined: document.getElementById('mJoined').value,
         mobileNumber: document.getElementById('mMobile').value,
         comments: document.getElementById('mComments').value,
         datadog: document.getElementById('mDatadog').value,
@@ -1870,23 +2546,116 @@ function deleteMember(srNo) {
         .then(function() { loadTeamList(); });
 }
 
-function showOffboardModal() {
-    document.getElementById('offboardModal').classList.add('show');
+function showOffboardModal(data) {
+    currentEditId = data ? 
+        (data.candidateId || data.candidateID) : null;
+    
+    // Populate candidate dropdown
+    var select = document
+        .getElementById('obCandidateSelect');
+    if (select && allTeamData.length) {
+        select.innerHTML = 
+            '<option value="">Select Member</option>';
+        allTeamData.forEach(function(m) {
+            select.innerHTML += 
+                '<option value="' + m.srNo + 
+                '" data-email="' + m.email + 
+                '" data-name="' + m.name + '">' +
+                m.name + ' - ' + m.email + 
+                '</option>';
+        });
+    }
+
+    if (data) {
+        if (select) select.value = 
+            data.candidateId || data.candidateID;
+        document.getElementById('obName')
+            .value = data.name || '';
+        document.getElementById('obEmail')
+            .value = data.email || '';
+        document.getElementById('obRole')
+            .value = data.role || '';
+        document.getElementById('obReason')
+            .value = data.reason || '';
+    } else {
+        if (select) select.value = '';
+        document.getElementById('obName').value = '';
+        document.getElementById('obEmail').value = '';
+        document.getElementById('obRole').value = '';
+        document.getElementById('obReason').value = '';
+    }
+    document.getElementById('offboardModal')
+        .classList.add('show');
 }
 
+
+
 function saveOffboard() {
+    var select = document
+        .getElementById('obCandidateSelect');
+    var candidateId = select ? 
+        parseInt(select.value) : 0;
+    var email = document
+        .getElementById('obEmail').value;
+    var name = document
+        .getElementById('obName').value;
+    var role2 = document
+        .getElementById('obRole').value;
+    var reason = document
+        .getElementById('obReason').value;
+
+    if (!candidateId && !currentEditId) {
+        alert('Please select a member');
+        return;
+    }
+
+    // Validate email in TeamMember
+    if (email) {
+        var member = allTeamData.find(function(m) {
+            return m.email && 
+                m.email.toLowerCase() === 
+                email.toLowerCase();
+        });
+        if (!member) {
+            alert('Email not found in TeamMember list');
+            return;
+        }
+    }
+
     var data = {
-        candidateId: parseInt(document.getElementById('obCandidateId').value),
-        name: document.getElementById('obName').value,
-        email: document.getElementById('obEmail').value,
-        role: document.getElementById('obRole').value,
-        reason: document.getElementById('obReason').value
+        candidateId: currentEditId || candidateId,
+        name: name,
+        email: email,
+        role: role2,
+        reason: reason
     };
-    apiPost('/api/offboarded', data).then(function() {
-        closeModal('offboardModal');
-        loadOffboarded();
+
+    var url = currentEditId ?
+        '/api/offboarded/' + currentEditId :
+        '/api/offboarded';
+    var method = currentEditId ? 'PATCH' : 'POST';
+
+    fetch(url, {
+        method: method,
+        headers: {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    })
+    .then(function(r) {
+        if (r.ok) {
+            closeModal('offboardModal');
+            currentEditId = null;
+            loadOffboarded2();
+            loadOffboarded();
+        } else {
+            alert('Error: ' + r.status);
+        }
     });
 }
+
+
 
 function deleteOffboard(id) {
     if (!id || id === 0) {
@@ -1897,7 +2666,7 @@ function deleteOffboard(id) {
         return;
     apiDelete('/api/offboarded/' + id)
     .then(function() {
-        loadOffboarded();
+        loadOffboarded2();
     }).catch(function(e) {
         alert('Error deleting: ' + e);
     });
@@ -2124,12 +2893,34 @@ function saveUser() {
         return;
     }
 
+    if (!currentEditId && !password) {
+        alert('Password is required for new user');
+        return;
+    }
+
+    // Validate email exists in TeamMember
+    if (!currentEditId) {
+        var member = allTeamData.find(function(m) {
+            return m.email && 
+                m.email.toLowerCase() === 
+                username.toLowerCase();
+        });
+        if (!member) {
+            alert('Email not found in TeamMember list. ' +
+                'User must be an existing team member.');
+            return;
+        }
+    }
+
     var data = {
         userName: username,
-        passwordHash: password,
         role: userRole,
         isActive: isActive
     };
+
+    if (password) {
+        data.passwordHash = password;
+    }
 
     var url = currentEditId ?
         '/api/users/' + currentEditId :
@@ -2148,7 +2939,22 @@ function saveUser() {
         if (r.ok) {
             closeModal('userModal');
             currentEditId = null;
-            loadManagement();
+
+            var currentUsername = localStorage
+                .getItem('username');
+            var currentRole = localStorage
+                .getItem('role');
+
+            if (currentUsername === username &&
+                userRole !== currentRole) {
+                alert('Your role has been changed.' +
+                    ' You will be logged out now.');
+                localStorage.clear();
+                window.location.href = 'index.html';
+                return;
+            }
+
+            loadManagementUsers();
         } else {
             alert('Error: ' + r.status);
         }
@@ -2157,6 +2963,8 @@ function saveUser() {
         alert('Failed: ' + e);
     });
 }
+
+
 
 
 
@@ -2295,7 +3103,7 @@ function openOther(tabName) {
     else if (tabName === 'activeinactive') loadActiveInactive();
     else if (tabName === 'prsd') loadPRSD();
     else if (tabName === 'projects') loadProjects();
-    else if (tabName === 'users') loadUsers();
+    else if (tabName === 'traininglinks') {}
 }
 
 function formatDateForInput(dateStr) {
@@ -2322,15 +3130,183 @@ document.addEventListener('click', function(e) {
 });
 
 
+function loadStepProgress(team) {
+    fetch('/api/onboarding/progress', {
+        headers: {
+            'Authorization': 'Bearer ' + token
+        }
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(progress) {
+        var candidateId = getCurrentCandidateId();
+        progress.forEach(function(p) {
+            var select = document
+                .getElementById(
+                    'stepStatus_' + p.stepID);
+            if (!select) return;
+            
+            if (role === 'Admin') {
+                if (select && p.status) {
+                    select.value = p.status;
+                    updateStepColor(
+                        p.stepID, p.status);
+                }
+            } else {
+                if (p.candidateID == candidateId) {
+                    select.value = p.status;
+                    updateStepColor(
+                        p.stepID, p.status);
+                }
+            }
+        });
+    })
+    .catch(function(e) {
+        console.log('Progress load error:', e);
+    });
+}
+
+
+function updateStepStatus(stepId) {
+    var candidateId = getCurrentCandidateId();
+    if (!candidateId) {
+        alert('Could not find your profile.');
+        return;
+    }
+    var select = document
+        .getElementById('stepStatus_' + stepId);
+    var status = select.value;
+    var completedDate = status === 'Completed' ?
+        new Date().toISOString().split('T')[0] : '';
+
+    var data = {
+        candidateID: candidateId,
+        stepID: stepId,
+        status: status,
+        completedDate: completedDate
+    };
+
+    fetch('/api/onboarding/progress', {
+        method: 'PATCH',
+        headers: {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    })
+    .then(function(r) {
+        if (r.ok) {
+            updateStepColor(stepId, status);
+        } else {
+            alert('Error updating status');
+        }
+    });
+}
+
+
+function updateStepColor(stepId, status) {
+    var card = document
+        .getElementById('step-' + stepId);
+    if (!card) return;
+    if (status === 'Completed') {
+        card.style.borderLeft = '4px solid #86bc25';
+        card.style.background = '#f1f8e9';
+    } else if (status === 'InProgress') {
+        card.style.borderLeft = '4px solid #f57c00';
+        card.style.background = '#fff3e0';
+    } else {
+        card.style.borderLeft = '4px solid #ddd';
+        card.style.background = '#f8f9fa';
+    }
+}
+
+function getCurrentCandidateId() {
+    var userEmail = localStorage
+        .getItem('username');
+    if (!userEmail) return null;
+    
+    var member = allTeamData.find(function(m) {
+        return m.email && 
+            m.email.toLowerCase() === 
+            userEmail.toLowerCase();
+    });
+    return member ? member.srNo : null;
+}
+
+
 
 function logout() {
+    var savedTeam = localStorage
+        .getItem('selectedTeam');
     localStorage.clear();
+    if (savedTeam) {
+        localStorage.setItem(
+            'selectedTeam', savedTeam);
+    }
     window.location.href = 'index.html';
 }
+
 
 // Load initial data
 loadTeamList();
 loadOffboarded();
 </script>
+
+<div class="modal-overlay" id="progressModal">
+    <div class="modal">
+        <h3>Edit Candidate Progress</h3>
+        <input type="hidden" id="progressCandidateId">
+        <input type="hidden" id="progressStepId">
+        <div class="form-group">
+            <label>Candidate Name</label>
+            <input type="text"
+                id="progressCandidateName"
+                readonly
+                style="background:#f5f5f5;">
+        </div>
+        <div class="form-group">
+            <label>Step Name</label>
+            <input type="text"
+                id="progressStepName"
+                readonly
+                style="background:#f5f5f5;">
+        </div>
+        <div class="form-group">
+            <label>Step Order</label>
+            <input type="number"
+                id="progressStepOrder">
+        </div>
+        <div class="form-group">
+            <label>Status</label>
+            <select id="progressStatus">
+                <option value="NotStarted">
+                    Not Started
+                </option>
+                <option value="InProgress">
+                    In Progress
+                </option>
+                <option value="Completed">
+                    Completed
+                </option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Completed Date</label>
+            <input type="date"
+                id="progressCompletedDate">
+        </div>
+        <div class="modal-actions">
+            <button class="btn-cancel"
+                onclick="closeModal('progressModal')">
+                Cancel
+            </button>
+            <button class="btn-save"
+                onclick="saveProgress()">
+                Save
+            </button>
+        </div>
+    </div>
+</div>
+
+
 </body>
 </html>
