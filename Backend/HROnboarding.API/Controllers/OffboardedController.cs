@@ -48,6 +48,17 @@ namespace HROnboarding.API.Controllers
                 message = "Member deleted"
             });
         }
+
+        [HttpPatch("{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Update(
+    int id, [FromBody] Offboarded member)
+        {
+            member.CandidateID = id;
+            await _repo.UpdateOffboarded(member);
+            return Ok(new { message = "Updated" });
+        }
+
     }
 }
 

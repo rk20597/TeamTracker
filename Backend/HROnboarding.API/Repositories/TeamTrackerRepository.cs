@@ -321,7 +321,7 @@ namespace HROnboarding.API.Repositories
                 sheet.Cells[newRow, 8].Value = member.LevelOriginal;
                 sheet.Cells[newRow, 9].Value = member.Level;
                 sheet.Cells[newRow, 10].Value = member.ClientLevel;
-                sheet.Cells[newRow, 31].Value = member.OnboardingDate;
+                sheet.Cells[newRow, 11].Value = member.OnboardingDate;
                 sheet.Cells[newRow, 12].Value = member.Joined;
                 sheet.Cells[newRow, 13].Value = member.JobFamily;
                 sheet.Cells[newRow, 14].Value = member.GDLeader1;
@@ -1464,6 +1464,58 @@ namespace HROnboarding.API.Repositories
             }
         }
 
+        // EDIT OFFBOARDED
+        public async Task UpdateOffboarded(Offboarded member)
+        {
+            await _lock.WaitAsync();
+            try
+            {
+                using var package = new ExcelPackage(
+                    new FileInfo(_filePath));
+
+                ExcelWorksheet? sheet = null;
+                foreach (var ws in package.Workbook
+                    .Worksheets)
+                {
+                    if (ws.Name.Trim() == "Offboarding")
+                    {
+                        sheet = ws;
+                        break;
+                    }
+                }
+
+                if (sheet == null) return;
+                if (sheet.Dimension == null) return;
+
+                for (int row = 2; row <= sheet
+                    .Dimension.End.Row; row++)
+                {
+                    var idVal = sheet.Cells[row, 1]
+                        .Value?.ToString();
+                    int id = 0;
+                    int.TryParse(idVal, out id);
+                    if (id == member.CandidateID)
+                    {
+                        sheet.Cells[row, 2].Value =
+                            member.Name;
+                        sheet.Cells[row, 3].Value =
+                            member.Email;
+                        sheet.Cells[row, 4].Value =
+                            member.Role;
+                        sheet.Cells[row, 5].Value =
+                            member.Reason;
+                        break;
+                    }
+                }
+                await package.SaveAsync();
+            }
+            finally
+            {
+                _lock.Release();
+            }
+        }
+
+
         // GET ONBOARDING STEPS BY TEAM
         public async Task<List<OnboardingStep>>
             GetOnboardingStepsByTeam(string teamName)
@@ -1658,6 +1710,7 @@ namespace HROnboarding.API.Repositories
                 {
                     progressID = prog.ProgressID,
                     candidateID = prog.CandidateID,
+                    onboardingDate = member.OnboardingDate,
                     candidateName = member.Name,
                     email = member.Email,
                     jobFamily = member.JobFamily,
