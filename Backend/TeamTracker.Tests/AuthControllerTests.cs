@@ -1,5 +1,5 @@
 ﻿using NUnit.Framework;
-using HROnboarding.API.Models;
+using TeamTracker.API.Models;
 
 namespace TeamTracker.Tests
 {

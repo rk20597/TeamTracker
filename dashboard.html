@@ -487,11 +487,6 @@
                     <option value="Active">Active</option>
                     <option value="Inactive">Inactive</option>
                 </select>
-                <select class="filter-select"
-                    id="filterOOCity"
-                    onchange="applyOOFilters()">
-                    <option value="">All Cities</option>
-                </select>
                 <input class="search-box" 
                     type="text"
                     id="ooSearch"
@@ -1348,10 +1343,12 @@ function loadOnboardedOffboarded() {
             allTeamData = data;
             populateOOFilters(data);
             ooPage = 1;
+	    allOOData = data;
             renderOOTable(data);
             loadOffboarded2();
         });
     } else {
+	allOOData = allTeamData;
         populateOOFilters(allTeamData);
         ooPage = 1;
         renderOOTable(allTeamData);
@@ -1360,34 +1357,30 @@ function loadOnboardedOffboarded() {
 }
 
 function populateOOFilters(data) {
-    var cities = [...new Set(data.map(
-        function(m) { return m.city; })
-        .filter(Boolean))].sort();
-    var sel = document
-        .getElementById('filterOOCity');
-    sel.innerHTML = 
-        '<option value="">All Cities</option>';
-    cities.forEach(function(c) {
-        sel.innerHTML += 
-            '<option value="' + c + '">' + 
-            c + '</option>';
-    });
+    var statusSel = document
+        .getElementById('filterOOStatus');
+    if (statusSel) {
+        statusSel.innerHTML = 
+            '<option value="">All Status</option>' +
+            '<option value="Active">Active</option>' +
+            '<option value="Inactive">Inactive</option>';
+    }
 }
+
 
 function applyOOFilters() {
     var status = document
         .getElementById('filterOOStatus').value;
-    var city = document
-        .getElementById('filterOOCity').value;
     var search = document
         .getElementById('ooSearch')
         .value.toLowerCase();
 
     var filtered = allOOData.filter(function(m) {
-        return (!status || m.status === status) &&
-            (!city || m.city === city) &&
-            (!search || JSON.stringify(m)
-            .toLowerCase().includes(search));
+        return (!status || 
+            (m.status && m.status === status)) &&
+            (!search || 
+            JSON.stringify(m).toLowerCase()
+            .includes(search));
     });
     ooPage = 1;
     renderOOTable(filtered);

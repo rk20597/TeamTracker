@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="../TeamTracker.Tests/TeamTracker.Tests.csproj" Id="302d5e70-f24b-4c2c-a18e-93e625862d2b" />
+  <Project Path="TeamTracker.API.csproj" />
+</Solution>
