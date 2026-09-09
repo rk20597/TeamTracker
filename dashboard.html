@@ -2661,7 +2661,7 @@ function saveTraining() {
         '/api/trainingstatus';
     var method = currentEditId ? 'PATCH' : 'POST';
 
-    fetch(url, {
+    fetch(API + url, {
         method: method,
         headers: {
             'Authorization': 'Bearer ' + token,
@@ -2874,7 +2874,7 @@ function saveUser() {
         '/api/users';
     var method = currentEditId ? 'PATCH' : 'POST';
 
-    fetch(url, {
+    fetch(API + url, {
         method: method,
         headers: {
             'Authorization': 'Bearer ' + token,
