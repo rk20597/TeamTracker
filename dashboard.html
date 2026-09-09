@@ -1207,7 +1207,8 @@ function populateTeamDropdowns() {
 // API helpers
 function apiGet(url) {
     return fetch(API + url, {
-        headers: { 'Authorization': 'Bearer ' + token }
+        headers: { 'Authorization': 'Bearer ' + token, 
+		  'ngrok-skip-browser-warning': 'true'}
     }).then(function(r) { return r.json(); });
 }
 
@@ -1216,7 +1217,8 @@ function apiPost(url, data) {
         method: 'POST',
         headers: {
             'Authorization': 'Bearer ' + token,
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+	    'ngrok-skip-browser-warning': 'true'
         },
         body: JSON.stringify(data)
     }).then(function(r) { return r.json(); });
@@ -1227,7 +1229,8 @@ function apiPatch(url, data) {
         method: 'PATCH',
         headers: {
             'Authorization': 'Bearer ' + token,
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+	    'ngrok-skip-browser-warning': 'true'
         },
         body: JSON.stringify(data)
     }).then(function(r) { return r.json(); });
@@ -1236,7 +1239,8 @@ function apiPatch(url, data) {
 function apiDelete(url) {
     return fetch(API + url, {
         method: 'DELETE',
-        headers: { 'Authorization': 'Bearer ' + token }
+        headers: { 'Authorization': 'Bearer ' + token,
+		   'ngrok-skip-browser-warning': 'true' }
     }).then(function(r) { return r.json(); });
 }
 
